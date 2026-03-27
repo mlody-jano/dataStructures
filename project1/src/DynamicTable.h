@@ -5,7 +5,7 @@
 
 #pragma once
 
-using namespace std; 
+using namespace std;
 
 class DynamicTable
 {
@@ -31,9 +31,9 @@ public:
     void printTable() const; // Utility function to print the contents of the table for testing purposes
 
 private:
-    int* table;
     int capacity;
     int size;
+    int *table;
 };
 
 #endif

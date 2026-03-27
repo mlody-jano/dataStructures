@@ -2,10 +2,8 @@
 
 DoublyLinkedList::DoublyLinkedList()
 {
-
 }
 
 DoublyLinkedList::~DoublyLinkedList()
 {
-
 }

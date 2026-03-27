@@ -1,6 +1,15 @@
 #include "Menu.h"
+#include "DynamicTable.h"
 #include "SinglyLinkedList.h"
 #include "DoublyLinkedList.h"
+
+Menu::Menu()
+{
+}
+
+Menu::~Menu()
+{
+}
 
 void Menu::displayMenu() const
 {
@@ -16,114 +25,136 @@ void Menu::displayMenu() const
     cout << "9. Exit" << endl;
 }
 
-void Menu::handleUserInput(DynamicTable& table, SinglyLinkedList& singlyList, DoublyLinkedList& doublyList)
+void Menu::displayStructuresMenu() const
+{
+    cout << "Select a data structure:" << endl;
+    cout << "1. Dynamic Table" << endl;
+    cout << "2. Singly Linked List" << endl;
+    cout << "3. Doubly Linked List" << endl;
+}
+
+void Menu::handleUserInput(DynamicTable &table, SinglyLinkedList &singlyList, DoublyLinkedList &doublyList)
 {
     int structure, choice, element, position;
 
-    while (true) {
-        displayMenu();
+    while (true)
+    {
+        displayStructuresMenu();
         cout << "Enter structure: ";
         cin >> structure;
 
         switch (structure)
         {
         case 1:
-            displayMenu();
-            cout << "Enter choice: ";
-            cin >> choice;
-            switch (choice) {
-            case 1:
-                cout << "Enter element to add at the beginning: ";
-                cin >> element;
-                table.addElementAtBeginning(element);
-                break;
-            case 2:
-                cout << "Enter element to add at the end: ";
-                cin >> element;
-                table.addElementAtEnd(element);
-                break;
-            case 3:
-                cout << "Enter element to add: ";
-                cin >> element;
-                cout << "Enter position to add the element: ";
-                cin >> position;
-                table.addElementAtPosition(element, position);
-                break;
-            case 4:
-                table.deleteElementAtBeginning();
-                break;
-            case 5:
-                table.deleteElementAtEnd();
-                break;
-            case 6:
-                cout << "Enter position to delete the element from: ";
-                cin >> position;
-                table.deleteElementAtPosition(position);
-                break;
-            case 7:
-                cout << "Enter element to search for: ";
-                cin >> element;
-                table.searchElement(element);
-                break;
-            case 8:
-                table.printTable();
-                break;
-            case 9:
-                cout << "Exiting..." << endl;
-                return;
-            default:
-                cerr << "Invalid choice. Please try again." << endl;
+            while (true)
+            {
+                displayMenu();
+                cout << "Enter choice: ";
+                cin >> choice;
+                switch (choice)
+                {
+                case 1:
+                    cout << "Enter element to add at the beginning: ";
+                    cin >> element;
+                    table.addElementAtBeginning(element);
+                    break;
+                case 2:
+                    cout << "Enter element to add at the end: ";
+                    cin >> element;
+                    table.addElementAtEnd(element);
+                    break;
+                case 3:
+                    cout << "Enter element to add: ";
+                    cin >> element;
+                    cout << "Enter position to add the element: ";
+                    cin >> position;
+                    table.addElementAtPosition(element, position);
+                    break;
+                case 4:
+                    table.deleteElementAtBeginning();
+                    break;
+                case 5:
+                    table.deleteElementAtEnd();
+                    break;
+                case 6:
+                    cout << "Enter position to delete the element from: ";
+                    cin >> position;
+                    table.deleteElementAtPosition(position);
+                    break;
+                case 7:
+                    cout << "Enter element to search for: ";
+                    cin >> element;
+                    table.searchElement(element);
+                    break;
+                case 8:
+                    table.printTable();
+                    break;
+                case 9:
+                    cout << "Exiting..." << endl;
+                    return;
+                default:
+                    cerr << "Invalid choice. Please try again." << endl;
+                }
             }
             break;
         case 2:
+            while (true)
+            {
+                displayMenu();
+                cout << "Enter choice: ";
+                cin >> choice;
+                switch (choice)
+                {
+                case 1:
+                    cout << "Enter element to add at the beginning: ";
+                    cin >> element;
+                    singlyList.pushFront(element);
+                    break;
+                case 2:
+                    cout << "Enter element to add at the end: ";
+                    cin >> element;
+                    singlyList.pushBack(element);
+                    break;
+                case 3:
+                    cout << "Enter element to add: ";
+                    cin >> element;
+                    cout << "Enter position to add the element: ";
+                    cin >> position;
+                    singlyList.insert(element, position);
+                    break;
+                case 4:
+                    singlyList.popFront();
+                    break;
+                case 5:
+                    singlyList.popBack();
+                    break;
+                case 6:
+                    cout << "Enter position to delete the element from: ";
+                    cin >> position;
+                    singlyList.remove(position);
+                    break;
+                case 7:
+                    cout << "Enter element to search for: ";
+                    cin >> element;
+                    singlyList.find(element);
+                    break;
+                case 8:
+                    singlyList.display();
+                    break;
+                case 9:
+                    cout << "Exiting..." << endl;
+                    return;
+
+                default:
+                    cerr << "Invalid choice. Please try again." << endl;
+                }
+            }
+        /*case 3:
             displayMenu();
             cout << "Enter choice: ";
             cin >> choice;
             switch (choice)
             {
-            case 1:
-                cout << "Enter element to add at the beginning: ";
-                cin >> element;
-                singlyList.addElementAtBeginning(element);
-                break;
-            case 2:
-                cout << "Enter element to add at the end: ";
-                cin >> element;
-                singlyList.addElementAtEnd(element);
-                break;
-            case 3:
-                cout << "Enter element to add: ";
-                cin >> element;
-                cout << "Enter position to add the element: ";
-                cin >> position;
-                singlyList.addElementAtPosition(element, position);
-                break;
-            case 4:
-                singlyList.deleteElementAtBeginning();
-                break;
-            case 5:
-                singlyList.deleteElementAtEnd();
-                break;
-            case 6:
-                cout << "Enter position to delete the element from: ";
-                cin >> position;
-                singlyList.deleteElementAtPosition(position);
-                break;
-            case 7:
-                cout << "Enter element to search for: ";
-                cin >> element;
-                singlyList.searchElement(element);
-                break;
-            
-            default:
-                break;
-            }
-            break;
-        case 3:
-            displayMenu();
-            cout << "Enter choice: ";
-            cin >> choice;
-            switch (choice) {
             case 1:
                 cout << "Enter element to add at the beginning: ";
                 cin >> element;
@@ -141,7 +172,7 @@ void Menu::handleUserInput(DynamicTable& table, SinglyLinkedList& singlyList, Do
                 cin >> position;
                 doublyList.addElementAtPosition(element, position);
                 break;
-                case 4:
+            case 4:
                 singlyList.deleteElementAtBeginning();
                 break;
             case 5:
@@ -157,11 +188,11 @@ void Menu::handleUserInput(DynamicTable& table, SinglyLinkedList& singlyList, Do
                 cin >> element;
                 singlyList.searchElement(element);
                 break;
-            
+
             default:
                 break;
             }
-            break;
+            break;*/
         default:
             cerr << "Invalid structure. Please try again." << endl;
         }
