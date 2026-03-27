@@ -107,3 +107,12 @@ void DynamicTable::checkCapacity() // Doubling the capacity of the table. Operat
         capacity *= 2;
     }
 }
+
+void DynamicTable::printTable() const // Utility function to print the contents of the table for testing purposes
+{
+    cout << "Table contents: ";
+    for (int i = 0; i < size; i++) {
+        cout << table[i] << " ";
+    }
+    cout << endl;
+}
