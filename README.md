@@ -27,7 +27,6 @@ The final project focuses on implementing a dictionary (map) structure, which al
 
 ## 🛠️ Technologies
 
-> **Note:** [Fill this section with your specific data]
 * **Programming language:** C++26
 * **Build tools:** CMake
 
@@ -39,5 +38,5 @@ To clone the repository and run the projects locally, follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/YourUsername/repository-name.git](https://github.com/mlody-jano/dataStructures.git)
+   git clone https://github.com/mlody-jano/dataStructures.git
    ```
