@@ -34,7 +34,7 @@ void DynamicTable::addElementAtEnd(int element) // Adding an element at the end 
 
 void DynamicTable::addElementAtPosition(int element, int position) // Adding an element at a specific position in the table
 {
-    if (position < 0 || position > size) {
+    if (position < 0 || position > capacity) {
         cerr << "Invalid position. Element not added." << endl;
         return;
     }
@@ -43,7 +43,7 @@ void DynamicTable::addElementAtPosition(int element, int position) // Adding an 
         checkCapacity();
     }
 
-    for (int i = size; i > position; i--) { // Shifting elements on the right of position to make room for new element
+    for (int i = capacity - 1; i > position; i--) { // Shifting elements on the right of position to make room for new element
         table[i] = table[i - 1];
     }
     table[position] = element;
@@ -110,7 +110,12 @@ void DynamicTable::checkCapacity() // Doubling the capacity of the table. Operat
 
 void DynamicTable::printTable() const // Utility function to print the contents of the table for testing purposes
 {
-    cout << "Table contents: ";
+    cout << "Table contents: " << endl;
+    for (int i = 0; i < size; i++) {
+        cout << i << " ";
+    }
+    cout << endl;
+
     for (int i = 0; i < size; i++) {
         cout << table[i] << " ";
     }
