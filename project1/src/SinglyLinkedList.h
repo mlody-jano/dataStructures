@@ -5,12 +5,19 @@
 
 class SinglyLinkedList
 {
+private:
+    struct Node
+    {
+        int data;
+        Node *next;
+    };
+    Node *head;
+    Node *tail;
+    int size;
+
 public:
     SinglyLinkedList();
     ~SinglyLinkedList();
-
-private:
-
 };
 
 #endif
