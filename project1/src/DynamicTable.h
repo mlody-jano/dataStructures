@@ -9,7 +9,12 @@ public:
     DynamicTable();
     ~DynamicTable();
 
+    
+
 private:
+    int** table;
+    int capacity;
+    int size;
 };
 
 #endif
