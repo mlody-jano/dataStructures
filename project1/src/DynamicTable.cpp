@@ -11,12 +11,15 @@ DynamicTable::~DynamicTable()
 
 void DynamicTable::addElementAtBeginning(int element) // Adding an element at the beginning of the table
 {
-    if (size == 0) { // If the table is empty, simply add the element at the first position
+    if (size == 0)
+    { // If the table is empty, simply add the element at the first position
         table[0] = element;
         size++;
     }
-    else if (size < capacity) {
-        for (int i = size; i > 0; i--) {
+    else if (size < capacity)
+    {
+        for (int i = size; i > 0; i--)
+        {
             table[i] = table[i - 1];
         }
         table[0] = element;
@@ -34,16 +37,19 @@ void DynamicTable::addElementAtEnd(int element) // Adding an element at the end 
 
 void DynamicTable::addElementAtPosition(int element, int position) // Adding an element at a specific position in the table
 {
-    if (position < 0 || position > capacity) {
+    if (position < 0 || position > capacity)
+    {
         cerr << "Invalid position. Element not added." << endl;
         return;
     }
 
-    if (size == capacity) {
+    if (size == capacity)
+    {
         checkCapacity();
     }
 
-    for (int i = capacity - 1; i > position; i--) { // Shifting elements on the right of position to make room for new element
+    for (int i = capacity - 1; i > position; i--)
+    { // Shifting elements on the right of position to make room for new element
         table[i] = table[i - 1];
     }
     table[position] = element;
@@ -52,11 +58,13 @@ void DynamicTable::addElementAtPosition(int element, int position) // Adding an 
 
 void DynamicTable::deleteElementAtBeginning() // Deleting an element from the beginning of the table
 {
-    if (size == 0) {
+    if (size == 0)
+    {
         cerr << "Table is empty. No element to delete." << endl;
         return;
     }
-    for (int i = 0; i < size - 1; i++) { // Shifting elements on the right to fill the gap left by deleted element
+    for (int i = 0; i < size - 1; i++)
+    { // Shifting elements on the right to fill the gap left by deleted element
         table[i] = table[i + 1];
     }
     size--;
@@ -64,7 +72,8 @@ void DynamicTable::deleteElementAtBeginning() // Deleting an element from the be
 
 void DynamicTable::deleteElementAtEnd()
 {
-    if (size == 0) {
+    if (size == 0)
+    {
         cerr << "Table is empty. No element to delete." << endl;
         return;
     }
@@ -74,11 +83,13 @@ void DynamicTable::deleteElementAtEnd()
 
 void DynamicTable::deleteElementAtPosition(int position) // Deleting an element from a specific position in the table
 {
-    if (position < 0 || position >= size) {
+    if (position < 0 || position >= size)
+    {
         cerr << "Invalid position. No element deleted." << endl;
         return;
     }
-    for (int i = position; i < size - 1; i++) { // Shifting elements on the right of position to fill the gap left by deleted element
+    for (int i = position; i < size - 1; i++)
+    { // Shifting elements on the right of position to fill the gap left by deleted element
         table[i] = table[i + 1];
     }
     size--;
@@ -86,8 +97,10 @@ void DynamicTable::deleteElementAtPosition(int position) // Deleting an element 
 
 void DynamicTable::searchElement(int element) const // Searching for an element in the table and printing its position if found
 {
-    for (int i = 0; i < size; i++) { // Linear search through the table is 0(n) in the worst case, if we have to navigate through the entire table
-        if (table[i] == element) {
+    for (int i = 0; i < size; i++)
+    { // Linear search through the table is 0(n) in the worst case, if we have to navigate through the entire table
+        if (table[i] == element)
+        {
             cout << "Element " << element << " found at position " << i << "." << endl;
             return;
         }
@@ -97,9 +110,11 @@ void DynamicTable::searchElement(int element) const // Searching for an element 
 
 void DynamicTable::checkCapacity() // Doubling the capacity of the table. Operation is O(n) due to copying size elements to new table
 {
-    if (size == capacity) {
-        int* newTable = new int[capacity * 2];
-        for (int i = 0; i < size; i++) {
+    if (size == capacity)
+    {
+        int *newTable = new int[capacity * 2];
+        for (int i = 0; i < size; i++)
+        {
             newTable[i] = table[i];
         }
         delete[] table;
@@ -108,15 +123,17 @@ void DynamicTable::checkCapacity() // Doubling the capacity of the table. Operat
     }
 }
 
-void DynamicTable::printTable() const // Utility function to print the contents of the table for testing purposes
+void DynamicTable::display() const // Utility function to print the contents of the table for testing purposes
 {
     cout << "Table contents: " << endl;
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
+    {
         cout << i << " ";
     }
     cout << endl;
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
+    {
         cout << table[i] << " ";
     }
     cout << endl;

@@ -19,18 +19,18 @@ SinglyLinkedList::~SinglyLinkedList()
     }
 }
 
-void SinglyLinkedList::pushFront(int value)
+void SinglyLinkedList::addElementAtBeginning(int value)
 {
     Node *newNode = new Node{value, head};
     head = newNode;
-    if (head == nullptr)
+    if (tail == nullptr)
     {
         tail = newNode;
     }
     size++;
 }
 
-void SinglyLinkedList::popFront()
+void SinglyLinkedList::deleteElementAtBeginning()
 {
     if (head == nullptr)
     {
@@ -49,7 +49,7 @@ void SinglyLinkedList::popFront()
     size--;
 }
 
-void SinglyLinkedList::pushBack(int value)
+void SinglyLinkedList::addElementAtEnd(int value)
 {
     Node *newNode = new Node{value, nullptr};
 
@@ -67,7 +67,7 @@ void SinglyLinkedList::pushBack(int value)
     size++;
 }
 
-void SinglyLinkedList::popBack()
+void SinglyLinkedList::deleteElementAtEnd()
 {
     if (head == nullptr)
     {
@@ -79,6 +79,7 @@ void SinglyLinkedList::popBack()
         delete head;
         head = nullptr;
         tail = nullptr;
+        size--;
         return;
     }
 
@@ -95,7 +96,7 @@ void SinglyLinkedList::popBack()
     size--;
 }
 
-void SinglyLinkedList::insert(int value, int position)
+void SinglyLinkedList::addElementAtPosition(int value, int position)
 {
     if (position < 0)
     {
@@ -104,7 +105,13 @@ void SinglyLinkedList::insert(int value, int position)
 
     if (position == 0)
     {
-        pushFront(value);
+        addElementAtBeginning(value);
+        return;
+    }
+
+    else if (position == size)
+    {
+        addElementAtEnd(value);
         return;
     }
 
@@ -123,15 +130,10 @@ void SinglyLinkedList::insert(int value, int position)
     newNode->next = current->next;
     current->next = newNode;
 
-    if (newNode->next == nullptr)
-    {
-        tail = newNode;
-    }
-
     size++;
 }
 
-void SinglyLinkedList::remove(int position)
+void SinglyLinkedList::deleteElementAtPosition(int position)
 {
     if (position < 0 || head == nullptr)
     {
@@ -140,7 +142,13 @@ void SinglyLinkedList::remove(int position)
 
     if (position == 0)
     {
-        popFront();
+        deleteElementAtBeginning();
+        return;
+    }
+
+    if (position == size - 1)
+    {
+        deleteElementAtEnd();
         return;
     }
 
@@ -157,14 +165,11 @@ void SinglyLinkedList::remove(int position)
 
     Node *temp = current->next;
     current->next = temp->next;
-    if (temp == tail)
-    {
-        tail = current;
-    }
     delete temp;
+    size--;
 }
 
-void SinglyLinkedList::find(int value)
+void SinglyLinkedList::searchElement(int value)
 {
     Node *current = head;
     int position = 0;
@@ -188,6 +193,14 @@ void SinglyLinkedList::find(int value)
 void SinglyLinkedList::display() const
 {
     Node *current = head;
+
+    std::cout << "Singly Linked List: " << std::endl;
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
     while (current != nullptr)
     {
         std::cout << current->data << " ";

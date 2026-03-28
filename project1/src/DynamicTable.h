@@ -28,7 +28,7 @@ public:
 
     void checkCapacity();
 
-    void printTable() const; // Utility function to print the contents of the table for testing purposes
+    void display() const; // Utility function to print the contents of the table for testing purposes
 
 private:
     int capacity;
