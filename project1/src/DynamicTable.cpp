@@ -95,17 +95,18 @@ void DynamicTable::deleteElementAtPosition(int position) // Deleting an element 
     size--;
 }
 
-void DynamicTable::searchElement(int element) const // Searching for an element in the table and printing its position if found
+volatile bool DynamicTable::searchElement(int element) const // Searching for an element in the table and printing its position if found
 {
     for (int i = 0; i < size; i++)
     { // Linear search through the table is 0(n) in the worst case, if we have to navigate through the entire table
         if (table[i] == element)
         {
-            cout << "Element " << element << " found at position " << i << "." << endl;
-            return;
+            // cout << "Element " << element << " found at position " << i << "." << endl;
+            return true;
         }
     }
     cout << "Element " << element << " not found in the table." << endl;
+    return false;
 }
 
 void DynamicTable::checkCapacity() // Doubling the capacity of the table. Operation is O(n) due to copying size elements to new table
@@ -138,3 +139,13 @@ void DynamicTable::display() const // Utility function to print the contents of 
     }
     cout << endl;
 }
+
+int DynamicTable::returnElementAtPosition(int position) const
+    {
+        if (position < 0 || position >= size)
+        {
+            cerr << "Invalid position. No element returned." << endl;
+            return -1; // Return -1 to indicate an error
+        }
+        return table[position];
+    }

@@ -26,7 +26,8 @@ public:
     void deleteElementAtEnd();
     void addElementAtPosition(int value, int position);
     void deleteElementAtPosition(int position);
-    void searchElement(int value);
+    volatile bool searchElement(int value);
+    int returnElementAtPosition(int position) const;
     void display() const;
 };
 

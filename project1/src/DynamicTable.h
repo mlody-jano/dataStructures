@@ -24,7 +24,9 @@ public:
     void deleteElementAtEnd();
     void deleteElementAtPosition(int);
 
-    void searchElement(int) const;
+    volatile bool searchElement(int) const;
+
+    int returnElementAtPosition(int position) const;
 
     void checkCapacity();
 

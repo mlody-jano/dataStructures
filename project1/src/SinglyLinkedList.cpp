@@ -169,25 +169,22 @@ void SinglyLinkedList::deleteElementAtPosition(int position)
     size--;
 }
 
-void SinglyLinkedList::searchElement(int value)
+volatile bool SinglyLinkedList::searchElement(int value)
 {
     Node *current = head;
     int position = 0;
-    bool found = false;
     while (current != nullptr)
     {
         if (current->data == value)
         {
-            std::cout << "Value " << value << " found at position " << position << std::endl;
-            found = true;
+            // std::cout << "Value " << value << " found at position " << position << std::endl;
+            return true;
         }
         current = current->next;
         position++;
     }
-    if (!found)
-    {
-        std::cout << "Value " << value << " not found in the list." << std::endl;
-    }
+    // std::cout << "Value " << value << " not found in the list." << std::endl;
+    return false;
 }
 
 void SinglyLinkedList::display() const
@@ -207,4 +204,20 @@ void SinglyLinkedList::display() const
         current = current->next;
     }
     std::cout << std::endl;
+}
+
+int SinglyLinkedList::returnElementAtPosition(int position) const
+{
+    if (position < 0 || position >= size)
+    {
+        std::cerr << "Invalid position. Returning -1." << std::endl;
+        return -1; // Return -1 to indicate an error
+    }
+
+    Node *current = head;
+    for (int i = 0; i < position; i++)
+    {
+        current = current->next;
+    }
+    return current->data;
 }

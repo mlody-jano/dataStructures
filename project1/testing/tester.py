@@ -1,53 +1,48 @@
 import subprocess
 import os
 import sys
+import numpy as np
 import matplotlib.pyplot as plt
 
 # Parametry testu
 SEED = int(sys.argv[1])
-executable_path = "./project1"                                                                              # Path to compiled C++ executable
+executable_path = "./project1.exe"                                                                          # Path to compiled C++ executable
 data_file = f"testing/data/data_{SEED}.txt"                                                                 # Data file
 sizes_to_test = [20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 200000]                # Sizes to test
+data_structures = ['DynamicTable', 'SinglyLinkedList', 'DoublyLinkedList']                                  # Data structures to test
 repetitions = 100                                                                                           # Number of repetitions for averaging
 
-print(f"{'Size':>10} | {'PushFront':>10} | {'PushBack':>10} | {'InsertRand':>10} | {'Search':>10}")
-print("-" * 60)
-
 # Lists for saving results
-sizes_plot = []
-time_push_front = []
-time_push_back = []
-time_insert_random = []
-time_search = []
+sizes_plot = np.array(sizes_to_test)
+time_push_front = np.zeros_like(sizes_plot, dtype=float)
+time_push_back = np.zeros_like(sizes_plot, dtype=float)
+time_insert_random = np.zeros_like(sizes_plot, dtype=float)
+time_search = np.zeros_like(sizes_plot, dtype=float)
 
-for size in sizes_to_test:
-    avg_results = [0.0, 0.0, 0.0, 0.0]
-    
-    for _ in range(repetitions):
-        result = subprocess.run([executable_path, str(size), data_file], capture_output=True, text=True)
-        
+for i, size in enumerate(sizes_to_test):
+    avg_results = np.zeros((4, repetitions), dtype=float)  # To store cumulative times for each operation
+    for rep in range(repetitions):
+        result = subprocess.run([executable_path, str(data_structures[1]), str(size), data_file], capture_output=True, text=True)           # API call to C++ executable 
+
         if result.returncode == 0:
             output = result.stdout.strip().split(',')
-            avg_results[0] += float(output[1])
-            avg_results[1] += float(output[2])
-            avg_results[2] += float(output[3])
-            avg_results[3] += float(output[4])
+            avg_results[0, rep] = float(output[0])
+            avg_results[1, rep] = float(output[1])
+            avg_results[2, rep] = float(output[2])
+            avg_results[3, rep] = float(output[3])
         else:
             print(f"Error for size {size}: {result.stderr}")
             break
 
     # Averaging
-    avg_results = [res / repetitions for res in avg_results]
+    avg_results = np.mean(avg_results, axis=0)                                                              # Average times for each operation
 
-    # Saving results to console
-    print(f"{size:10} | {avg_results[0]:10.0f} | {avg_results[1]:10.0f} | {avg_results[2]:10.0f} | {avg_results[3]:10.0f}")
-    
     # Saving results for plotting
-    sizes_plot.append(size)
-    time_push_front.append(avg_results[0])
-    time_push_back.append(avg_results[1])
-    time_insert_random.append(avg_results[2])
-    time_search.append(avg_results[3])
+    sizes_plot[i] = size
+    time_push_front[i] = avg_results[0]
+    time_push_back[i] = avg_results[1]
+    time_insert_random[i] = avg_results[2]
+    time_search[i] = avg_results[3]
 
 # --- Generating plot ---
 print("\nGenerating plot...")
