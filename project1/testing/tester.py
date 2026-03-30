@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Parametry testu
 SEED = int(sys.argv[1])
-executable_path = "./project1.exe"                                                                          # Path to compiled C++ executable
+executable_path = "./project1DoubleList.exe"                                                                # Hook to C++ executable
 data_file = f"testing/data/data_{SEED}.txt"                                                                 # Data file
 sizes_to_test = [20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 200000]                # Sizes to test
 data_structures = ['DynamicTable', 'SinglyLinkedList', 'DoublyLinkedList']                                  # Data structures to test
@@ -22,7 +22,7 @@ time_search = np.zeros_like(sizes_plot, dtype=float)
 for i, size in enumerate(sizes_to_test):
     avg_results = np.zeros((4, repetitions), dtype=float)  # To store cumulative times for each operation
     for rep in range(repetitions):
-        result = subprocess.run([executable_path, str(data_structures[1]), str(size), data_file], capture_output=True, text=True)           # API call to C++ executable 
+        result = subprocess.run([executable_path, str(data_structures[2]), str(size), data_file], capture_output=True, text=True)           # API call to C++ executable 
 
         if result.returncode == 0:
             output = result.stdout.strip().split(',')

@@ -179,7 +179,7 @@ void DoublyLinkedList::deleteElementAtPosition(int position)
     size--;
 }
 
-void DoublyLinkedList::searchElement(int value)
+volatile bool DoublyLinkedList::searchElement(int value) const
 {
     Node *current = head;
     int position = 0;
@@ -188,7 +188,7 @@ void DoublyLinkedList::searchElement(int value)
     {
         if (current->data == value)
         {
-            std::cout << "Value " << value << " found at position " << position << std::endl;
+            // std::cout << "Value " << value << " found at position " << position << std::endl;
             found = true;
         }
         current = current->next;
@@ -196,8 +196,9 @@ void DoublyLinkedList::searchElement(int value)
     }
     if (!found)
     {
-        std::cout << "Value " << value << " not found in the list." << std::endl;
+        // std::cout << "Value " << value << " not found in the list." << std::endl;
     }
+    return found;
 }
 
 void DoublyLinkedList::display() const
@@ -217,4 +218,31 @@ void DoublyLinkedList::display() const
         current = current->next;
     }
     std::cout << std::endl;
+}
+
+int DoublyLinkedList::returnElementAtPosition(int position) const
+{
+    if (position < 0 || position >= size)
+    {
+        throw std::out_of_range("Position out of range");
+    }
+
+    Node *current;
+    if (position < size / 2)
+    {
+        current = head;
+        for (int i = 0; i < position && current != nullptr; ++i)
+        {
+            current = current->next;
+        }
+    }
+    else
+    {
+        current = tail;
+        for (int i = size - 1; i > position && current != nullptr; --i)
+        {
+            current = current->prev;
+        }
+    }
+    return current->data;
 }

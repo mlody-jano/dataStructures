@@ -21,13 +21,18 @@ public:
     DoublyLinkedList();
     ~DoublyLinkedList();
 
-    void addElementAtBeginning(int value);
-    void addElementAtEnd(int value);
+    void addElementAtBeginning(int);
+    void addElementAtEnd(int);
+    void addElementAtPosition(int, int);
+
     void deleteElementAtBeginning();
     void deleteElementAtEnd();
-    void addElementAtPosition(int value, int position);
-    void deleteElementAtPosition(int position);
-    void searchElement(int value);
+    void deleteElementAtPosition(int);
+
+    volatile bool searchElement(int) const;
+
+    int returnElementAtPosition(int) const;
+
     void display() const;
 };
 
