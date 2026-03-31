@@ -1,262 +1,740 @@
 #include "Test.h"
+#include <iostream>
+#include <chrono>
 
-// ─────────────────────────────────────────────
-//  Konstruktor
-// ─────────────────────────────────────────────
-Test::Test(const std::string &dataFilePath,
-           int repetitions,
-           int startSize,
-           int sizeStep,
-           int numberOfSizes)
-    : dataFilePath(dataFilePath),
-      repetitions(repetitions),
-      startSize(startSize),
-      sizeStep(sizeStep),
-      numberOfSizes(numberOfSizes)
+using namespace std;
+using namespace std::chrono;
+
+int *Test::loadDataFromFile(const string &filename, int &outSize)
 {
-    // Największy rozmiar jaki będziemy testować
-    int maxSize = startSize + sizeStep * (numberOfSizes - 1);
-
-    // Losujemy pozycję i wartość wyszukiwania raz — używamy ich przez cały test
-    std::mt19937 rng(42);                                       // stały seed = powtarzalne wyniki
-    std::uniform_int_distribution<int> posDist(1, maxSize - 2); // środek, nie skrajne
-    fixedPosition = posDist(rng);
-    fixedSearchValue = 0; // ustawimy po wczytaniu danych (patrz runAll)
-
-    std::cout << "[Test] fixedPosition    = " << fixedPosition << "\n";
-}
-
-// ─────────────────────────────────────────────
-//  Wczytywanie danych
-// ─────────────────────────────────────────────
-std::vector<int> Test::loadData(int n) const
-{
-    std::ifstream file(dataFilePath);
+    ifstream file(filename);
     if (!file.is_open())
     {
-        std::cerr << "[Test] Nie można otworzyć pliku: " << dataFilePath << "\n";
-        return {};
+        cerr << "Nie udalo sie otworzyc pliku: " << filename << endl;
+        outSize = 0;
+        return nullptr;
     }
 
-    std::vector<int> data;
-    data.reserve(n);
-    int value;
-    while (data.size() < static_cast<size_t>(n) && file >> value)
+    // 1. Zliczanie elementów
+    int count = 0;
+    int tempValue;
+    while (file >> tempValue)
     {
-        data.push_back(value);
+        count++;
     }
 
-    if (static_cast<int>(data.size()) < n)
+    // 2. Powrót na początek pliku
+    file.clear();
+    file.seekg(0, ios::beg);
+
+    // 3. Alokacja tablicy i właściwe wczytanie danych
+    int *dataArray = new int[count];
+    for (int i = 0; i < count; i++)
     {
-        std::cerr << "[Test] Plik zawiera tylko " << data.size()
-                  << " liczb, a wymagano " << n << "\n";
+        file >> dataArray[i];
     }
 
-    return data;
+    file.close();
+    outSize = count;
+    return dataArray;
 }
 
-// ─────────────────────────────────────────────
-//  Wypełnianie struktury (poza pomiarem)
-// ─────────────────────────────────────────────
-template <typename T>
-void Test::fillStructure(T &structure, const std::vector<int> &data) const
+void Test::testDynamicTable(int *baseData, int dataSize, ofstream &csvFile)
 {
-    for (int val : data)
+    int testValue = 9999; // Przykładowa wartość używana do dodawania/wyszukiwania
+
+    // ==========================================
+    // OPERACJA: Dodawanie na początek
+    // ==========================================
     {
-        structure.addElementAtEnd(val);
+        DynamicTable tables[NUM_COPIES]; // Tworzy 100 pustych tablic
+
+        // Wypełnienie wszystkich 100 tablic danymi z pliku
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now(); // START ZEGARA
+
+        // Wykonanie operacji na każdej tablicy
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].addElementAtBeginning(testValue);
+        }
+
+        auto end = high_resolution_clock::now(); // STOP ZEGARA
+
+        // Obliczenia
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        // Zapis do CSV
+        csvFile << "DynamicTable;AddAtBeginning;" << dataSize << ";" << avgTime << "\n";
+    } // <-- Tutaj tablica 100 obiektów 'tables' jest usuwana, pamięć czyszczona automatycznie
+
+    // ==========================================
+    // OPERACJA: Dodawanie na koniec
+    // ==========================================
+
+    {
+        DynamicTable tables[NUM_COPIES]; // Tworzy 100 pustych tablic
+
+        // Wypełnienie wszystkich 100 tablic danymi z pliku
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now(); // START ZEGARA
+
+        // Wykonanie operacji na każdej tablicy
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].addElementAtEnd(testValue);
+        }
+
+        auto end = high_resolution_clock::now(); // STOP ZEGARA
+
+        // Obliczenia
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        // Zapis do CSV
+        csvFile << "DynamicTable;AddAtEnd;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Dodawanie na losową pozycję
+    // ==========================================
+
+    {
+        DynamicTable tables[NUM_COPIES]; // Tworzy 100 pustych tablic
+
+        // Wypełnienie wszystkich 100 tablic danymi z pliku
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now(); // START ZEGARA
+
+        // Wykonanie operacji na każdej tablicy
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].addElementAtPosition(testValue, dataSize / 2); // Dodajemy na środek tablicy
+        }
+
+        auto end = high_resolution_clock::now(); // STOP ZEGARA
+
+        // Obliczenia
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        // Zapis do CSV
+        csvFile << "DynamicTable;AddAtPosition;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z początku
+    // ==========================================
+
+    {
+        DynamicTable tables[NUM_COPIES]; // Znowu tworzymy 100 świeżych tablic
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].deleteElementAtBeginning();
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DynamicTable;DeleteAtBeginning;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z końca
+    // ==========================================
+    {
+        DynamicTable tables[NUM_COPIES]; // Znowu tworzymy 100 świeżych tablic
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].deleteElementAtEnd();
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DynamicTable;DeleteAtEnd;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z losowej pozycji
+    // ==========================================
+
+    {
+        DynamicTable tables[NUM_COPIES]; // Znowu tworzymy 100 świeżych tablic
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].deleteElementAtPosition(dataSize / 2); // Usuwamy element ze środka tablicy
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DynamicTable;DeleteAtPosition;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Szukanie elementu (załóżmy, że szukamy ostatniego)
+    // ==========================================
+    {
+        DynamicTable tables[NUM_COPIES];
+        int valueToSearch = baseData[dataSize - 1]; // Szukamy ostatniego elementu (pesymistyczny przypadek)
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                tables[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            tables[i].searchElement(valueToSearch);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DynamicTable;Search;" << dataSize << ";" << avgTime << "\n";
     }
 }
 
-// ─────────────────────────────────────────────
-//  Tworzenie 'repetitions' kopii
-// ─────────────────────────────────────────────
-template <typename T>
-std::vector<T *> Test::createCopies(const std::vector<int> &data) const
+void Test::testSinglyLinkedList(int *baseData, int dataSize, ofstream &csvFile)
 {
-    std::vector<T *> copies;
-    copies.reserve(repetitions);
+    int testValue = 9999;
 
-    for (int i = 0; i < repetitions; ++i)
+    // ==========================================
+    // OPERACJA: Dodawanie na początek
+    // ==========================================
     {
-        T *copy = new T();
-        fillStructure(*copy, data);
-        copies.push_back(copy);
+        SinglyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].addElementAtBeginning(testValue);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;AddAtBeginning;" << dataSize << ";" << avgTime << "\n";
     }
 
-    return copies;
+    // ==========================================
+    // OPERACJA: Dodawanie na koniec
+    // ==========================================
+
+    {
+        SinglyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].addElementAtEnd(testValue);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;AddAtEnd;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Dodawanie na losową pozycję
+    // ==========================================
+
+    {
+        SinglyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].addElementAtPosition(testValue, dataSize / 2); // Dodajemy na środek listy
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;AddAtPosition;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z początku
+    // ==========================================
+    {
+        SinglyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].deleteElementAtBeginning();
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;DeleteAtBeginning;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z końca
+    // ==========================================
+
+    {
+        SinglyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].deleteElementAtEnd();
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;DeleteAtEnd;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z losowej pozycji
+    // ==========================================
+
+    {
+        SinglyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].deleteElementAtPosition(dataSize / 2); // Usuwamy element ze środka listy
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;DeleteAtPosition;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Szukanie elementu (załóżmy, że szukamy ostatniego)
+    // ==========================================
+
+    {
+        SinglyLinkedList lists[NUM_COPIES];
+        int valueToSearch = baseData[dataSize - 1]; // Szukamy ostatniego elementu (pesymistyczny przypadek)
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].searchElement(valueToSearch);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "SinglyLinkedList;Search;" << dataSize << ";" << avgTime << "\n";
+    }
 }
 
-// ─────────────────────────────────────────────
-//  Zwalnianie kopii
-// ─────────────────────────────────────────────
-template <typename T>
-void Test::deleteCopies(std::vector<T *> &copies) const
+void Test::testDoublyLinkedList(int *baseData, int dataSize, ofstream &csvFile)
 {
-    for (T *ptr : copies)
+    int testValue = 9999;
+
+    // ==========================================
+    // OPERACJA: Dodawanie na początek
+    // ==========================================
+
     {
-        delete ptr;
+        DoublyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].addElementAtBeginning(testValue);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;AddAtBeginning;" << dataSize << ";" << avgTime << "\n";
     }
-    copies.clear();
+
+    // ==========================================
+    // OPERACJA: Dodawanie na koniec
+    // ==========================================
+    {
+        DoublyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].addElementAtEnd(testValue);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;AddAtEnd;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Dodawanie na losową pozycję
+    // ==========================================
+
+    {
+        DoublyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].addElementAtPosition(testValue, dataSize / 2); // Dodajemy na środek listy
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;AddAtPosition;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z początku
+    // ==========================================
+
+    {
+        DoublyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].deleteElementAtBeginning();
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;DeleteAtBeginning;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z końca
+    // ==========================================
+
+    {
+        DoublyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].deleteElementAtEnd();
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;DeleteAtEnd;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Usuwanie z losowej pozycji
+    // ==========================================
+
+    {
+        DoublyLinkedList lists[NUM_COPIES];
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].deleteElementAtPosition(dataSize / 2); // Usuwamy element ze środka listy
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;DeleteAtPosition;" << dataSize << ";" << avgTime << "\n";
+    }
+
+    // ==========================================
+    // OPERACJA: Szukanie elementu (załóżmy, że szukamy ostatniego)
+    // ==========================================
+
+    {
+        DoublyLinkedList lists[NUM_COPIES];
+        int valueToSearch = baseData[dataSize - 1]; // Szukamy ostatniego elementu (pesymistyczny przypadek)
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            for (int j = 0; j < dataSize; ++j)
+            {
+                lists[i].addElementAtEnd(baseData[j]);
+            }
+        }
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < NUM_COPIES; ++i)
+        {
+            lists[i].searchElement(valueToSearch);
+        }
+
+        auto end = high_resolution_clock::now();
+
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES;
+
+        csvFile << "DoublyLinkedList;Search;" << dataSize << ";" << avgTime << "\n";
+    }
 }
 
-// ─────────────────────────────────────────────
-//  Pomiar czasu
-//
-//  Każda iteracja:
-//    1. Bierze gotową kopię (dane już są)
-//    2. Start stopera
-//    3. Wykonuje operację
-//    4. Stop stopera
-//  Suma / repetitions = średni czas [ns]
-// ─────────────────────────────────────────────
-template <typename T>
-long long Test::measure(std::vector<T *> &copies,
-                        std::function<void(T &)> operation) const
+void Test::runAllTests(const string &inputFilename, const string &outputCsvFilename)
 {
-    long long totalNs = 0;
+    cout << "Wczytywanie danych z pliku: " << inputFilename << " ..." << endl;
 
-    for (int i = 0; i < repetitions; ++i)
+    int dataSize = 0;
+    int *baseData = loadDataFromFile(inputFilename, dataSize);
+
+    if (baseData == nullptr || dataSize == 0)
     {
-        auto start = std::chrono::high_resolution_clock::now();
-
-        operation(*copies[i]);
-
-        auto stop = std::chrono::high_resolution_clock::now();
-        totalNs += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-    }
-
-    return totalNs / repetitions;
-}
-
-// ─────────────────────────────────────────────
-//  Uruchamia wszystkie operacje dla jednej
-//  struktury i jednego rozmiaru danych
-// ─────────────────────────────────────────────
-template <typename T>
-void Test::runForStructure(const std::string &structureName,
-                           const std::vector<int> &data,
-                           int dataSize)
-{
-    // Pozycja nie może przekraczać rozmiaru danych
-    int pos = fixedPosition % (dataSize > 1 ? dataSize - 1 : 1);
-    if (pos == 0)
-        pos = 1;
-
-    std::cout << "  [" << structureName << "] rozmiar=" << dataSize
-              << " pozycja=" << pos << "\n";
-
-    // ── ADD AT BEGINNING ──────────────────────
-    {
-        auto copies = createCopies<T>(data);
-        long long t = measure<T>(copies, [](T &s)
-                                 { s.addElementAtBeginning(999); });
-        results.push_back({structureName, "addBeginning", dataSize, t});
-        deleteCopies(copies);
-    }
-
-    // ── ADD AT END ───────────────────────────
-    {
-        auto copies = createCopies<T>(data);
-        long long t = measure<T>(copies, [](T &s)
-                                 { s.addElementAtEnd(999); });
-        results.push_back({structureName, "addEnd", dataSize, t});
-        deleteCopies(copies);
-    }
-
-    // ── ADD AT POSITION ───────────────────────
-    {
-        auto copies = createCopies<T>(data);
-        long long t = measure<T>(copies, [pos](T &s)
-                                 { s.addElementAtPosition(999, pos); });
-        results.push_back({structureName, "addPosition", dataSize, t});
-        deleteCopies(copies);
-    }
-
-    // ── DELETE AT BEGINNING ───────────────────
-    {
-        auto copies = createCopies<T>(data);
-        long long t = measure<T>(copies, [](T &s)
-                                 { s.deleteElementAtBeginning(); });
-        results.push_back({structureName, "deleteBeginning", dataSize, t});
-        deleteCopies(copies);
-    }
-
-    // ── DELETE AT END ─────────────────────────
-    {
-        auto copies = createCopies<T>(data);
-        long long t = measure<T>(copies, [](T &s)
-                                 { s.deleteElementAtEnd(); });
-        results.push_back({structureName, "deleteEnd", dataSize, t});
-        deleteCopies(copies);
-    }
-
-    // ── DELETE AT POSITION ────────────────────
-    {
-        auto copies = createCopies<T>(data);
-        long long t = measure<T>(copies, [pos](T &s)
-                                 { s.deleteElementAtPosition(pos); });
-        results.push_back({structureName, "deletePosition", dataSize, t});
-        deleteCopies(copies);
-    }
-
-    // ── SEARCH ────────────────────────────────
-    {
-        auto copies = createCopies<T>(data);
-        int searchVal = fixedSearchValue;
-        long long t = measure<T>(copies, [searchVal](T &s)
-                                 { s.searchElement(searchVal); });
-        results.push_back({structureName, "search", dataSize, t});
-        deleteCopies(copies);
-    }
-}
-
-// ─────────────────────────────────────────────
-//  Główna metoda — uruchamia wszystko
-// ─────────────────────────────────────────────
-void Test::runAll()
-{
-    for (int i = 0; i < numberOfSizes; ++i)
-    {
-        int currentSize = startSize + i * sizeStep;
-        std::cout << "\n[Test] === Rozmiar: " << currentSize << " ===\n";
-
-        std::vector<int> data = loadData(currentSize);
-        if (static_cast<int>(data.size()) < currentSize)
-            continue;
-
-        // Ustalamy wartość do wyszukiwania: element ze środka danych
-        fixedSearchValue = data[currentSize / 2];
-
-        runForStructure<DynamicTable>("DynamicTable", data, currentSize);
-        runForStructure<SinglyLinkedList>("SinglyLinkedList", data, currentSize);
-        runForStructure<DoublyLinkedList>("DoublyLinkedList", data, currentSize);
-    }
-
-    std::cout << "\n[Test] Gotowe. Wyników: " << results.size() << "\n";
-}
-
-// ─────────────────────────────────────────────
-//  Zapis do CSV
-// ─────────────────────────────────────────────
-void Test::saveToCSV(const std::string &outputFilePath) const
-{
-    std::ofstream file(outputFilePath);
-    if (!file.is_open())
-    {
-        std::cerr << "[Test] Nie można zapisać pliku: " << outputFilePath << "\n";
+        cerr << "Brak danych do testow. Przerwano." << endl;
         return;
     }
 
-    // Nagłówek
-    file << "Struktura;Operacja;Rozmiar;SredniCzasNs\n";
-
-    for (const auto &r : results)
+    ofstream csvFile(outputCsvFilename);
+    if (!csvFile.is_open())
     {
-        file << r.structure << ";"
-             << r.operation << ";"
-             << r.dataSize << ";"
-             << r.avgTimeNs << "\n";
+        cerr << "Nie udalo sie otworzyc pliku CSV do zapisu!" << endl;
+        delete[] baseData;
+        return;
     }
 
-    std::cout << "[Test] CSV zapisany do: " << outputFilePath << "\n";
+    // Nagłówki w pliku CSV
+    csvFile << "DataStructure;Operation;Size;AverageTime_ns\n";
+    int testSizes[] = {20000, 40000, 60000, 80000};
+    int numberOfSizes = 4;
+
+    for (int i = 0; i < numberOfSizes; ++i)
+    {
+        int currentSize = testSizes[i];
+        cout << "Rozpoczynam testy DynamicTable dla rozmiaru: " << currentSize << endl;
+        testDynamicTable(baseData, currentSize, csvFile);
+
+        cout << "Rozpoczynam testy SinglyLinkedList dla rozmiaru: " << currentSize << endl;
+        testSinglyLinkedList(baseData, currentSize, csvFile);
+
+        cout << "Rozpoczynam testy DoublyLinkedList dla rozmiaru: " << currentSize << endl;
+        testDoublyLinkedList(baseData, currentSize, csvFile);
+    }
+
+    csvFile.close();
+    cout << "Testy zakonczone! Wyniki zapisano w pliku: " << outputCsvFilename << endl;
+
+    // Zwalniamy tablicę z danymi z pliku
+    delete[] baseData;
 }
