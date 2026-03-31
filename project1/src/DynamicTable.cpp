@@ -1,6 +1,6 @@
 #include "DynamicTable.h"
 
-DynamicTable::DynamicTable() : table{new int[capacity]}, capacity{100}, size{0} // Initializing the dynamic table with a default capacity of 100
+DynamicTable::DynamicTable() : capacity{100}, size{0}, table{new int[capacity]} // Initializing the dynamic table with a default capacity of 100
 {
 }
 
@@ -11,6 +11,7 @@ DynamicTable::~DynamicTable()
 
 void DynamicTable::addElementAtBeginning(int element) // Adding an element at the beginning of the table
 {
+    checkCapacity();
     if (size == 0)
     { // If the table is empty, simply add the element at the first position
         table[0] = element;
@@ -25,14 +26,13 @@ void DynamicTable::addElementAtBeginning(int element) // Adding an element at th
         table[0] = element;
         size++;
     }
-    checkCapacity();
 }
 
 void DynamicTable::addElementAtEnd(int element) // Adding an element at the end of the table, is 0(1) due to doubling the capacity when table is full
 {
+    checkCapacity();
     table[size] = element;
     size++;
-    checkCapacity();
 }
 
 void DynamicTable::addElementAtPosition(int element, int position) // Adding an element at a specific position in the table
@@ -42,11 +42,7 @@ void DynamicTable::addElementAtPosition(int element, int position) // Adding an 
         cerr << "Invalid position. Element not added." << endl;
         return;
     }
-
-    if (size == capacity)
-    {
-        checkCapacity();
-    }
+    checkCapacity();
 
     for (int i = capacity - 1; i > position; i--)
     { // Shifting elements on the right of position to make room for new element
@@ -97,16 +93,21 @@ void DynamicTable::deleteElementAtPosition(int position) // Deleting an element 
 
 volatile bool DynamicTable::searchElement(int element) const // Searching for an element in the table and printing its position if found
 {
+    bool found = false;
     for (int i = 0; i < size; i++)
-    { // Linear search through the table is 0(n) in the worst case, if we have to navigate through the entire table
+    { // Linear search through the table
         if (table[i] == element)
         {
             // cout << "Element " << element << " found at position " << i << "." << endl;
-            return true;
+            found = true;
+            // Do not break; continue searching the whole array
         }
     }
-    cout << "Element " << element << " not found in the table." << endl;
-    return false;
+    if (!found)
+    {
+        cout << "Element " << element << " not found in the table." << endl;
+    }
+    return found;
 }
 
 void DynamicTable::checkCapacity() // Doubling the capacity of the table. Operation is O(n) due to copying size elements to new table
