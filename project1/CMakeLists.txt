@@ -10,6 +10,7 @@ set(SOURCES
     src/DynamicTable.cpp
     src/Menu.cpp
     src/SinglyLinkedList.cpp
+    src/Test.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

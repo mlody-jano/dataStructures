@@ -1,6 +1,7 @@
 #include "DynamicTable.h"
 #include "SinglyLinkedList.h"
 #include "DoublyLinkedList.h"
+#include "Test.h"
 #include "Menu.h"
 #include <iostream>
 #include <string>
@@ -15,9 +16,13 @@ using namespace chrono;
 // In result it fills the data structure with data from file, and does operations being tested.
 // The object returned by this program is a std string with 4 comma-separated values, which are the times of each operation being tested.
 
-int main(int argc, char* argv[])
+int main()
 {
-    if (argc < 4) {
+
+    Test test("../testing/data/data_1.txt", 10, 2000, 2000, 5); // domyślnie: 100 powt., rozmiary 2000–10000 co 2000
+    test.runAll();
+    test.saveToCSV("../testing/data/wyniki.csv");
+    /*if (argc < 4) {
         std::cerr << "Please provide data structure, size, and data file path as command line arguments." << endl;
         return 1;
     }
@@ -80,10 +85,9 @@ int main(int argc, char* argv[])
     }
     else {
         cerr << "Unknown data structure: " << data_structure << endl;
-    }
+    }*/
 
     // 3. Wypisanie wyników (Format: Czas_PushFront_DTable, Czas_PushFront_SLL, Czas_PushFront_DLL,Czas_PushBack_DTable, Czas_PushBack_SLL, Czas_PushBack_DLL, Czas_InsertRandom_DTable, Czas_InsertRandom_SLL, Czas_InsertRandom_DLL, Czas_DeleteLast_DTable, Czas_DeleteLast_SLL, Czas_DeleteLast_DLL, Czas_Search_DTable, Czas_Search_SLL, Czas_Search_DLL)
-
 
     // // --- TEST 2: Dodawanie na końcu ---
 
@@ -102,7 +106,7 @@ int main(int argc, char* argv[])
     // {
     //     myTable[j].addElementAtPosition(rand() % 10000 + 1, rand() % size);
     // }
-    
+
     // stop = high_resolution_clock::now();
     // timeInsertRandom = duration_cast<nanoseconds>(stop - start).count();
 
@@ -114,14 +118,14 @@ int main(int argc, char* argv[])
     // {
     //     volatile bool found = myTable[j].searchElement(myTable[j].returnElementAtPosition(rand() % size)); // volatile zapobiega optymalizacji!
     // }
-    
+
     // stop = high_resolution_clock::now();
     // timeSearch = duration_cast<nanoseconds>(stop - start).count();
 
     // // 3. Wypisanie wyników (Format: Rozmiar, Czas_Front, Czas_Back, Czas_Random, Czas_Search)
-    // cout << timePushFront << "," 
-    //      << timePushBack << "," 
-    //      << timeInsertRandom << "," 
+    // cout << timePushFront << ","
+    //      << timePushBack << ","
+    //      << timeInsertRandom << ","
     //      << timeSearch << endl;
 
     // SinglyLinkedList myList[100];
@@ -138,7 +142,7 @@ int main(int argc, char* argv[])
     // }
 
     // long long timePushFront = 0, timePushBack = 0, timeInsertRandom = 0, timeSearch = 0;
-    
+
     // // --- TEST 1: Dodawanie na początku ---
 
     // auto start = high_resolution_clock::now();
@@ -181,9 +185,9 @@ int main(int argc, char* argv[])
     // timeSearch = duration_cast<nanoseconds>(stop - start).count();
 
     // // 3. Wypisanie wyników (Format: Rozmiar, Czas_Front, Czas_Back, Czas_Random, Czas_Search)
-    // cout << timePushFront << "," 
-    //      << timePushBack << "," 
-    //      << timeInsertRandom << "," 
+    // cout << timePushFront << ","
+    //      << timePushBack << ","
+    //      << timeInsertRandom << ","
     //      << timeSearch << endl;
 
     // DoublyLinkedList myDoubleList[100];
@@ -197,12 +201,12 @@ int main(int argc, char* argv[])
     //     {
     //         myDoubleList[j].addElementAtEnd(atoi(line.c_str()));
     //     }
-        
+
     //     i++;
     // }
 
     // long long timePushFront = 0, timePushBack = 0, timeInsertRandom = 0, timeSearch = 0;
-    
+
     // // --- TEST 1: Dodawanie na początku ---
 
     // auto start = high_resolution_clock::now();
@@ -245,10 +249,10 @@ int main(int argc, char* argv[])
     // timeSearch = (duration_cast<nanoseconds>(stop - start).count()) / 100; // Dzielimy przez 100, bo wykonaliśmy 100 operacji
 
     // 3. Wypisanie wyników (Format: Rozmiar, Czas_Front, Czas_Back, Czas_Random, Czas_Search)
-    // cout << size << "," 
-    //      << timePushFront << "," 
-    //      << timePushBack << "," 
-    //      << timeInsertRandom << "," 
+    // cout << size << ","
+    //      << timePushFront << ","
+    //      << timePushBack << ","
+    //      << timeInsertRandom << ","
     //      << timeSearch << endl;
 
     return 0;
