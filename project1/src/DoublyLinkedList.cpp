@@ -232,12 +232,18 @@ volatile bool DoublyLinkedList::searchElement(int value) const
     bool found = false;
     while (current != nullptr)
     {
-        current->data == value ? found = true : found = false;
+        if (current->data == value)
+        {
+            std::cout << "Value " << value << " found at position " << position << std::endl;
+            found = true;
+        }
         current = current->next;
         position++;
     }
-    found == true ? std::cout << "Value " << value << " found at position " << position << std::endl : std::cout << "Value " << value << " not found in the list." << std::endl;
-    
+    if (!found)
+    {
+        std::cout << "Value " << value << " not found in the list." << std::endl;
+    }
     return found;
 }
 

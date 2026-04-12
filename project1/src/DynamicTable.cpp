@@ -128,11 +128,18 @@ void DynamicTable::deleteAllElements() {
 */
 volatile bool DynamicTable::searchElement(int element) const {
     bool found = false;
-    for (int i = 0; i < size; i++) {
-        table[i] == element ? found = true : found = false;
+    for (int i = 0; i < size; i++)
+    {
+        if (table[i] == element)
+        {
+            std::cout << "Element " << element << " found at position " << i << "." << std::endl;
+            found = true;
+        }
     }
-    found == true ? cout << "Element " << element << " found." << endl : cout << "Element " << element << " not found in the table." << endl;
-
+    if (!found)
+    {
+        std::cout << "Element " << element << " not found in the table." << std::endl;
+    }
     return found;
 }
 
@@ -175,7 +182,7 @@ void DynamicTable::display() const {
 
 /*
     Returning the element at a specific position in the table
-    Is O(1) due to an array being a contiguous block of memory with indexing
+    Is O(1) due to an array being a contiguous block of memory with indexing 
 */
 int DynamicTable::returnElementAtPosition(int position) const {
     if (position < 0 || position >= size)
