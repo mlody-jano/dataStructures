@@ -10,7 +10,8 @@ DynamicTable::DynamicTable() : capacity{100}, size{0}, table{new int[capacity]} 
     Destructor for DynamicTable
     Deallocates the memory used by the dynamic table
 */
-DynamicTable::~DynamicTable() {
+DynamicTable::~DynamicTable()
+{
     delete[] table;
 }
 
@@ -18,7 +19,8 @@ DynamicTable::~DynamicTable() {
     Adds an element at the beginning of the table
     Is O(n) due to the fact we need to shift all the elements to the right to make room for the new element at the beginning of the table
 */
-void DynamicTable::addElementAtBeginning(int element) {
+void DynamicTable::addElementAtBeginning(int element)
+{
     checkCapacity();
     if (size == 0)
     { // If the table is empty, simply add the element at the first position
@@ -40,7 +42,8 @@ void DynamicTable::addElementAtBeginning(int element) {
     Adds an element at the end of the table
     Is O(1) due to having the size variable which allows us to add the element at the end of the table without needing to shift any elements
 */
-void DynamicTable::addElementAtEnd(int element) {
+void DynamicTable::addElementAtEnd(int element)
+{
     checkCapacity();
     table[size] = element;
     size++;
@@ -50,7 +53,8 @@ void DynamicTable::addElementAtEnd(int element) {
     Adds an element at a specific position in the table
     Is O(n) due to the fact we need to shift all the elements to the right of the position to make room for the new element at the given position
 */
-void DynamicTable::addElementAtPosition(int element, int position) {
+void DynamicTable::addElementAtPosition(int element, int position)
+{
     if (position < 0 || position > capacity)
     {
         cerr << "Invalid position. Element not added." << endl;
@@ -58,7 +62,7 @@ void DynamicTable::addElementAtPosition(int element, int position) {
     }
     checkCapacity();
 
-    for (int i = capacity - 1; i > position; i--)
+    for (int i = size; i > position; i--)
     { // Shifting elements on the right of position to make room for new element
         table[i] = table[i - 1];
     }
@@ -70,7 +74,8 @@ void DynamicTable::addElementAtPosition(int element, int position) {
     Deletes an element from the beginning of the table
     Is O(n) due to the fact we need to shift all the elements to the left to fill the gap left by the deleted element at the beginning of the table
 */
-void DynamicTable::deleteElementAtBeginning() {
+void DynamicTable::deleteElementAtBeginning()
+{
     if (size == 0)
     {
         cerr << "Table is empty. No element to delete." << endl;
@@ -87,7 +92,8 @@ void DynamicTable::deleteElementAtBeginning() {
     Deletes an element from the end of the table
     Is O(1) due to having the size variable which allows us to delete the element at the end of the table without needing to shift any elements
 */
-void DynamicTable::deleteElementAtEnd() {
+void DynamicTable::deleteElementAtEnd()
+{
     if (size == 0)
     {
         cerr << "Table is empty. No element to delete." << endl;
@@ -101,7 +107,8 @@ void DynamicTable::deleteElementAtEnd() {
     Deletes an element from a specific position in the table
     Is O(n) due to the fact we need to shift all the elements to the left of the position to fill the gap left by the deleted element at the given position
 */
-void DynamicTable::deleteElementAtPosition(int position) {
+void DynamicTable::deleteElementAtPosition(int position)
+{
     if (position < 0 || position >= size)
     {
         cerr << "Invalid position. No element deleted." << endl;
@@ -117,7 +124,8 @@ void DynamicTable::deleteElementAtPosition(int position) {
     Deletes all elements from the table
     Is O(1) due to the fact we can simply deallocate the current table and reinitialize it to its default state without needing to shift any elements
 */
-void DynamicTable::deleteAllElements() {
+void DynamicTable::deleteAllElements()
+{
     delete[] table; // Deallocating the current table
     DynamicTable(); // Reinitializing the table to its default state
 }
@@ -126,7 +134,8 @@ void DynamicTable::deleteAllElements() {
     Searching for an element in the table and printing its position if found
     Is O(n) due to the fact we need to traverse the whole table to find the element
 */
-volatile bool DynamicTable::searchElement(int element) const {
+volatile bool DynamicTable::searchElement(int element) const
+{
     bool found = false;
     for (int i = 0; i < size; i++)
     {
@@ -147,7 +156,8 @@ volatile bool DynamicTable::searchElement(int element) const {
     Checking if the table has enough capacity to add a new element and doubling the capacity of the table if it is full
     Is O(n) due to copying size elements to new table when the table is full
 */
-void DynamicTable::checkCapacity() {
+void DynamicTable::checkCapacity()
+{
     if (size == capacity)
     {
         int *newTable = new int[capacity * 2];
@@ -165,7 +175,8 @@ void DynamicTable::checkCapacity() {
     Displaying the elements of the table
     Is O(n) due to the fact we need to traverse the whole table to display all the elements
 */
-void DynamicTable::display() const {
+void DynamicTable::display() const
+{
     cout << "Table contents: " << endl;
     for (int i = 0; i < size; i++)
     {
@@ -182,9 +193,10 @@ void DynamicTable::display() const {
 
 /*
     Returning the element at a specific position in the table
-    Is O(1) due to an array being a contiguous block of memory with indexing 
+    Is O(1) due to an array being a contiguous block of memory with indexing
 */
-int DynamicTable::returnElementAtPosition(int position) const {
+int DynamicTable::returnElementAtPosition(int position) const
+{
     if (position < 0 || position >= size)
     {
         cerr << "Invalid position. No element returned." << endl;
