@@ -22,10 +22,13 @@ public:
 
     void addElementAtBeginning(int value);
     void addElementAtEnd(int value);
+
     void deleteElementAtBeginning();
     void deleteElementAtEnd();
     void addElementAtPosition(int value, int position);
     void deleteElementAtPosition(int position);
+    void deleteAllElements();
+
     volatile bool searchElement(int value);
     int returnElementAtPosition(int position) const;
     void display() const;

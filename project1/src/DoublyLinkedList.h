@@ -28,6 +28,7 @@ public:
     void deleteElementAtBeginning();
     void deleteElementAtEnd();
     void deleteElementAtPosition(int);
+    void deleteAllElements();
 
     volatile bool searchElement(int) const;
 

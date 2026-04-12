@@ -91,6 +91,12 @@ void DynamicTable::deleteElementAtPosition(int position) // Deleting an element 
     size--;
 }
 
+void DynamicTable::deleteAllElements() // Deleting all elements from the table
+{
+    delete[] table; // Deallocating the current table
+    DynamicTable(); // Reinitializing the table to its default state
+}
+
 volatile bool DynamicTable::searchElement(int element) const // Searching for an element in the table and printing its position if found
 {
     bool found = false;
@@ -142,11 +148,11 @@ void DynamicTable::display() const // Utility function to print the contents of 
 }
 
 int DynamicTable::returnElementAtPosition(int position) const
+{
+    if (position < 0 || position >= size)
     {
-        if (position < 0 || position >= size)
-        {
-            cerr << "Invalid position. No element returned." << endl;
-            return -1; // Return -1 to indicate an error
-        }
-        return table[position];
+        cerr << "Invalid position. No element returned." << endl;
+        return -1; // Return -1 to indicate an error
     }
+    return table[position];
+}

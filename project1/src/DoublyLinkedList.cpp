@@ -179,6 +179,18 @@ void DoublyLinkedList::deleteElementAtPosition(int position)
     size--;
 }
 
+void DoublyLinkedList::deleteAllElements()
+{
+    Node *current = head;
+    while (current != nullptr)
+    {
+        Node *temp = current;
+        current = current->next;
+        delete temp;
+    }
+    DoublyLinkedList(); // Reinitializing the list to its default state
+}
+
 volatile bool DoublyLinkedList::searchElement(int value) const
 {
     Node *current = head;

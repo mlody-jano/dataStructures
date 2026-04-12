@@ -169,6 +169,18 @@ void SinglyLinkedList::deleteElementAtPosition(int position)
     size--;
 }
 
+void SinglyLinkedList::deleteAllElements()
+{
+    Node *current = head;
+    while (current != nullptr)
+    {
+        Node *temp = current;
+        current = current->next;
+        delete temp;
+    }
+    SinglyLinkedList(); // Reinitializing the list to its default state
+}
+
 volatile bool SinglyLinkedList::searchElement(int value)
 {
     Node *current = head;
