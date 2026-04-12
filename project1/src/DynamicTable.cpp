@@ -128,17 +128,11 @@ void DynamicTable::deleteAllElements() {
 */
 volatile bool DynamicTable::searchElement(int element) const {
     bool found = false;
-    for (int i = 0; i < size; i++)
-    {
-        if (table[i] == element)
-        {
-            found = true;
-        }
+    for (int i = 0; i < size; i++) {
+        table[i] == element ? found = true : found = false;
     }
-    if (!found)
-    {
-        cout << "Element " << element << " not found in the table." << endl;
-    }
+    found == true ? cout << "Element " << element << " found." << endl : cout << "Element " << element << " not found in the table." << endl;
+
     return found;
 }
 

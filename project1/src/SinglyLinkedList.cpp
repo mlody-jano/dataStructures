@@ -219,19 +219,17 @@ void SinglyLinkedList::deleteAllElements() {
 */
 volatile bool SinglyLinkedList::searchElement(int value) {
     Node *current = head;
+    bool found = false;
     int position = 0;
     while (current != nullptr)
     {
-        if (current->data == value)
-        {
-            // std::cout << "Value " << value << " found at position " << position << std::endl;
-            return true;
-        }
+        current->data == value ? found = true : found = false;
         current = current->next;
         position++;
     }
-    // std::cout << "Value " << value << " not found in the list." << std::endl;
-    return false;
+    found == true ? std::cout << "Value " << value << " found." << std::endl : std::cout << "Value " << value << " not found in the list." << std::endl;
+
+    return found;
 }
 
 /*
