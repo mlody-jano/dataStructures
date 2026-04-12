@@ -3,6 +3,10 @@
 
 #pragma once
 
+/*
+    This is the header file for the DoublyLinkedList class
+    It contains the declaration of the class and its member functions
+*/
 class DoublyLinkedList
 {
 private:

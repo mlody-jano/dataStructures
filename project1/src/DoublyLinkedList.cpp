@@ -1,13 +1,14 @@
 #include "DoublyLinkedList.h"
 #include <iostream>
 
-DoublyLinkedList::DoublyLinkedList()
-{
-    head = nullptr;
-    tail = nullptr;
-    size = 0;
-}
+/*
+    Constructor for DoublyLinkedList
+*/
+DoublyLinkedList::DoublyLinkedList() : head{nullptr}, tail{nullptr}, size{0} {}
 
+/*
+    Destructor for DoublyLinkedList
+*/
 DoublyLinkedList::~DoublyLinkedList()
 {
     Node *current = head;
@@ -19,6 +20,10 @@ DoublyLinkedList::~DoublyLinkedList()
     }
 }
 
+/*
+    Adding the element at the beggining of the list
+    Is O(1) due to the head pointer and the fact we dont need to copy and shift the elements like in an array
+*/
 void DoublyLinkedList::addElementAtBeginning(int value)
 {
     Node *newNode = new Node{value, nullptr, head};
@@ -34,6 +39,10 @@ void DoublyLinkedList::addElementAtBeginning(int value)
     size++;
 }
 
+/*
+    Deleting the element at the beggining of the list
+    Is O(1) due to the head pointer and the fact we dont need to copy and shift the elements like in an array
+*/
 void DoublyLinkedList::deleteElementAtBeginning()
 {
     if (head == nullptr)
@@ -55,6 +64,10 @@ void DoublyLinkedList::deleteElementAtBeginning()
     size--;
 }
 
+/*
+    Adding the element at the end of the list
+    Is O(1) due to the tail pointer and the fact we dont need to copy and shift the elements like in an array
+*/
 void DoublyLinkedList::addElementAtEnd(int value)
 {
     Node *newNode = new Node{value, tail, nullptr};
@@ -70,6 +83,10 @@ void DoublyLinkedList::addElementAtEnd(int value)
     size++;
 }
 
+/*
+    Deleting the element at the end of the list
+    Is O(1) due to the tail pointer and the fact we dont need to copy and shift the elements like in an array
+*/
 void DoublyLinkedList::deleteElementAtEnd()
 {
     if (tail == nullptr)
@@ -91,6 +108,10 @@ void DoublyLinkedList::deleteElementAtEnd()
     size--;
 }
 
+/*
+    Adding the element at the given position of the list
+    Is O(n) due to the fact we need to traverse the list to find the position where we want to add the element
+*/
 void DoublyLinkedList::addElementAtPosition(int value, int position)
 {
     if (position < 0 || position > size)
@@ -136,6 +157,10 @@ void DoublyLinkedList::addElementAtPosition(int value, int position)
     size++;
 }
 
+/*
+    Deleting the element at the given position of the list
+    Is O(n) due to the fact we need to traverse the list to find the position where we want to delete the element
+*/
 void DoublyLinkedList::deleteElementAtPosition(int position)
 {
     if (position < 0 || position >= size)
@@ -179,6 +204,11 @@ void DoublyLinkedList::deleteElementAtPosition(int position)
     size--;
 }
 
+/*
+    Deleting all elements from the list
+    Is O(n) due to the fact we need to traverse the list to delete all the elements
+    After deleting all elements we reinitialize the list to its default state
+*/
 void DoublyLinkedList::deleteAllElements()
 {
     Node *current = head;
@@ -191,6 +221,10 @@ void DoublyLinkedList::deleteAllElements()
     DoublyLinkedList(); // Reinitializing the list to its default state
 }
 
+/*
+    Searching for an element in the list
+    Is O(n) due to the fact we need to traverse the list to find the element
+*/
 volatile bool DoublyLinkedList::searchElement(int value) const
 {
     Node *current = head;
@@ -213,6 +247,10 @@ volatile bool DoublyLinkedList::searchElement(int value) const
     return found;
 }
 
+/*
+    Displaying the elements of the list
+    Is O(n) due to the fact we need to traverse the list to display all the elements
+*/
 void DoublyLinkedList::display() const
 {
     Node *current = head;
@@ -232,6 +270,10 @@ void DoublyLinkedList::display() const
     std::cout << std::endl;
 }
 
+/*
+    Returning the element at the given position of the list
+    Is O(n) due to the fact we need to traverse the list to find the position where we want to return the element
+*/
 int DoublyLinkedList::returnElementAtPosition(int position) const
 {
     if (position < 0 || position >= size)
