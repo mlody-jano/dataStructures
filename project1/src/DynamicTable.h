@@ -7,6 +7,11 @@
 
 using namespace std;
 
+
+/*
+    Class representing a dynamic table data structure
+    The table is implemented as a dynamic array that can grow in size when needed
+*/
 class DynamicTable
 {
 public:

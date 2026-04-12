@@ -5,9 +5,18 @@
 #include "SinglyLinkedList.h"
 #include "DoublyLinkedList.h"
 
+/*
+    Class representing the menu for the program
+    It allows the user to interact with the three data structures and perform various operations on them
+    The menu is implemented as a class with member functions for displaying the menu options and handling user input
+*/
 class Menu
 {
 private:
+    /*
+        Display the submenu options for a specific data structure
+        Using a template function to allow for handling user input for all three data structures without needing to duplicate code for each data structure
+    */
     template <typename T>
     void displaySubMenu(T &dataStructure)
     {

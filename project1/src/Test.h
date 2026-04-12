@@ -12,10 +12,17 @@
 using namespace std;
 using namespace chrono;
 
+
+/*
+    Class representing the test suite for the three data structures
+    It provides functions for loading data from a file, running tests for each data structure, and recording the results in a CSV file
+    The tests include adding and deleting elements at various positions, as well as searching for an element in the data structure
+    The results of each test are recorded in a CSV file with the format: DataStructure;Operation;Size;AverageTime_ns
+*/
 class Test
 {
 private:
-    const int NUM_COPIES = 100;
+    const int NUM_COPIES = 100;                                                             // Number of iterations to run each test for averaging the results
 
     int *loadDataFromFile(const std::string &filename, int &outSize);
 
@@ -23,6 +30,12 @@ private:
     void testSinglyLinkedList(int *baseData, int dataSize, std::ofstream &csvFile);
     void testDoublyLinkedList(int *baseData, int dataSize, std::ofstream &csvFile);
 
+
+    /*
+        Measure the time taken to perform a specific operation on a container
+        This function takes a container type, an operation to perform, and the data to use for
+        Using a template function to unify the testing process for all three data structures
+    */
     template <typename Container, typename Operation>
     void measureOperation(
         const string &containerName,
@@ -42,17 +55,17 @@ private:
             }
         }
 
-        auto start = high_resolution_clock::now();
+        auto start = high_resolution_clock::now();                              // Start the timer before performing the operation on all copies of the container
 
         for (int i = 0; i < NUM_COPIES; ++i)
         {
-            op(containers[i]);
+            op(containers[i]);                                                  // Perform the specified operation on each copy of the container
         }
 
-        auto end = high_resolution_clock::now();
+        auto end = high_resolution_clock::now();                                // Stop the timer after performing the operation on all copies of the container
 
-        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
-        long long avgTime = totalDuration / NUM_COPIES;
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();      
+        long long avgTime = totalDuration / NUM_COPIES;                         // Calculate the average time
 
         csvFile << containerName << ";" << operationName << ";" << dataSize << ";" << avgTime << "\n";
     }

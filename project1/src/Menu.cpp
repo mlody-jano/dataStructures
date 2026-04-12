@@ -3,16 +3,20 @@
 #include "SinglyLinkedList.h"
 #include "DoublyLinkedList.h"
 
-Menu::Menu()
-{
-}
+/*
+    Constructor for Menu
+*/
+Menu::Menu() {}
 
-Menu::~Menu()
-{
-}
+/*
+    Destructor for Menu
+*/
+Menu::~Menu() {}
 
-void Menu::displayMenu() const
-{
+/*
+    Display the main menu options
+*/
+void Menu::displayMenu() const {
     cout << "Menu:" << endl;
     cout << "1. Add element at the beginning" << endl;
     cout << "2. Add element at the end" << endl;
@@ -25,16 +29,20 @@ void Menu::displayMenu() const
     cout << "9. Exit" << endl;
 }
 
-void Menu::displayStructuresMenu() const
-{
+/*
+    Display the available data structures
+*/
+void Menu::displayStructuresMenu() const {
     cout << "Select a data structure:" << endl;
     cout << "1. Dynamic Table" << endl;
     cout << "2. Singly Linked List" << endl;
     cout << "3. Doubly Linked List" << endl;
 }
 
-void Menu::handleUserInput(DynamicTable &table, SinglyLinkedList &singlyList, DoublyLinkedList &doublyList)
-{
+/*
+    Handle user input for the main menu and call the appropriate functions for the selected data structure
+*/
+void Menu::handleUserInput(DynamicTable &table, SinglyLinkedList &singlyList, DoublyLinkedList &doublyList) {
     int structure;
 
     while (true)

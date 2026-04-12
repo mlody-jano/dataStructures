@@ -3,6 +3,11 @@
 
 #pragma once
 
+/*
+    Class representing a singly linked list data structure
+    It allows for adding and deleting elements at the beginning, end, and specific positions in the list
+    It also provides functions for searching for an element, returning an element at a specific position, and displaying the contents of the list
+*/
 class SinglyLinkedList
 {
 private:
