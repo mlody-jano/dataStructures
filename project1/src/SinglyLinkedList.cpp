@@ -11,7 +11,8 @@ SinglyLinkedList::SinglyLinkedList() : head{nullptr}, tail{nullptr}, size{0} {}
     Destructor for SinglyLinkedList
     Deallocates the memory used by the nodes in the list
 */
-SinglyLinkedList::~SinglyLinkedList() {
+SinglyLinkedList::~SinglyLinkedList()
+{
     Node *current = head;
     while (current != nullptr)
     {
@@ -26,7 +27,8 @@ SinglyLinkedList::~SinglyLinkedList() {
     Creates a new node with the given value and sets it as the new head of the list
     Is O(1) since it only involves updating a few pointers and does not require traversing the list
 */
-void SinglyLinkedList::addElementAtBeginning(int value) {
+void SinglyLinkedList::addElementAtBeginning(int value)
+{
     Node *newNode = new Node{value, head};
     head = newNode;
     if (tail == nullptr)
@@ -41,7 +43,8 @@ void SinglyLinkedList::addElementAtBeginning(int value) {
     Updates the head pointer to point to the next node and deallocates the memory used by the old head node
     Is O(1) since it only involves updating a few pointers and does not require traversing the list
 */
-void SinglyLinkedList::deleteElementAtBeginning() {
+void SinglyLinkedList::deleteElementAtBeginning()
+{
     if (head == nullptr)
     {
         return;
@@ -64,7 +67,8 @@ void SinglyLinkedList::deleteElementAtBeginning() {
     Creates a new node with the given value and sets it as the new tail of the list
     Is O(1) since it only involves updating a few pointers and does not require traversing the list
 */
-void SinglyLinkedList::addElementAtEnd(int value) {
+void SinglyLinkedList::addElementAtEnd(int value)
+{
     Node *newNode = new Node{value, nullptr};
 
     if (tail != nullptr)
@@ -86,7 +90,8 @@ void SinglyLinkedList::addElementAtEnd(int value) {
     Updates the tail pointer to point to the previous node and deallocates the memory used by the old tail node
     Is O(n) since it requires traversing the list to find the second-to-last node
 */
-void SinglyLinkedList::deleteElementAtEnd() {
+void SinglyLinkedList::deleteElementAtEnd()
+{
     if (head == nullptr)
     {
         return;
@@ -119,7 +124,8 @@ void SinglyLinkedList::deleteElementAtEnd() {
     Creates a new node with the given value and inserts it at the specified position in the list
     Is O(n) since it may require traversing the list to find the correct position for insertion
 */
-void SinglyLinkedList::addElementAtPosition(int value, int position) {
+void SinglyLinkedList::addElementAtPosition(int value, int position)
+{
     if (position < 0)
     {
         return;
@@ -160,7 +166,8 @@ void SinglyLinkedList::addElementAtPosition(int value, int position) {
     Updates the pointers to bypass the node at the specified position
     Is O(n) since it may require traversing the list to find the correct position for deletion
 */
-void SinglyLinkedList::deleteElementAtPosition(int position) {
+void SinglyLinkedList::deleteElementAtPosition(int position)
+{
     if (position < 0 || head == nullptr)
     {
         return;
@@ -200,7 +207,8 @@ void SinglyLinkedList::deleteElementAtPosition(int position) {
     Deallocates the memory used by all nodes in the list and resets the head and tail pointers to nullptr
     Is O(n) since it requires traversing the entire list to delete all nodes
 */
-void SinglyLinkedList::deleteAllElements() {
+void SinglyLinkedList::deleteAllElements()
+{
     Node *current = head;
     while (current != nullptr)
     {
@@ -211,19 +219,20 @@ void SinglyLinkedList::deleteAllElements() {
     SinglyLinkedList(); // Reinitializing the list to its default state
 }
 
-
 /*
     Search for an element in the list
     Traverses the list to find the specified value and returns true if found, false otherwise
     Is O(n) since it may require traversing the entire list in the worst case
 */
-volatile bool SinglyLinkedList::searchElement(int value) {
+volatile bool SinglyLinkedList::searchElement(int value)
+{
     Node *current = head;
     bool found = false;
     int position = 0;
     while (current != nullptr)
     {
-        if (current->data == value) {
+        if (current->data == value)
+        {
             std::cout << "Value " << value << " found at position " << position << std::endl;
             found = true;
         }
@@ -243,14 +252,14 @@ volatile bool SinglyLinkedList::searchElement(int value) {
     Traverses the list and prints the value of each node to the console
     Is O(n) since it requires traversing the entire list to display all elements
 */
-void SinglyLinkedList::display() const {
+void SinglyLinkedList::display() const
+{
     Node *current = head;
 
     std::cout << "Singly Linked List: " << std::endl;
-    while (current != nullptr)
+    for (int i = 0; i < size; i++)
     {
-        std::cout << current->data << " ";
-        current = current->next;
+        std::cout << i << " ";
     }
     std::cout << std::endl;
 
@@ -267,7 +276,8 @@ void SinglyLinkedList::display() const {
     Traverses the list to find the node at the specified position and returns its value
     Is O(n) since it may require traversing the entire list in the worst case
 */
-int SinglyLinkedList::returnElementAtPosition(int position) const {
+int SinglyLinkedList::returnElementAtPosition(int position) const
+{
     if (position < 0 || position >= size)
     {
         std::cerr << "Invalid position. Returning -1." << std::endl;

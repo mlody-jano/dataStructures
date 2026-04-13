@@ -12,7 +12,6 @@
 using namespace std;
 using namespace chrono;
 
-
 /*
     Class representing the test suite for the three data structures
     It provides functions for loading data from a file, running tests for each data structure, and recording the results in a CSV file
@@ -22,14 +21,13 @@ using namespace chrono;
 class Test
 {
 private:
-    const int NUM_COPIES = 100;                                                             // Number of iterations to run each test for averaging the results
+    const int NUM_COPIES = 100; // Number of iterations to run each test for averaging the results
 
     int *loadDataFromFile(const std::string &filename, int &outSize);
 
     void testDynamicTable(int *baseData, int dataSize, std::ofstream &csvFile);
     void testSinglyLinkedList(int *baseData, int dataSize, std::ofstream &csvFile);
     void testDoublyLinkedList(int *baseData, int dataSize, std::ofstream &csvFile);
-
 
     /*
         Measure the time taken to perform a specific operation on a container
@@ -55,17 +53,17 @@ private:
             }
         }
 
-        auto start = high_resolution_clock::now();                              // Start the timer before performing the operation on all copies of the container
+        auto start = high_resolution_clock::now(); // Start the timer before performing the operation on all copies of the container
 
         for (int i = 0; i < NUM_COPIES; ++i)
         {
-            op(containers[i]);                                                  // Perform the specified operation on each copy of the container
+            op(containers[i]); // Perform the specified operation on each copy of the container
         }
 
-        auto end = high_resolution_clock::now();                                // Stop the timer after performing the operation on all copies of the container
+        auto end = high_resolution_clock::now(); // Stop the timer after performing the operation on all copies of the container
 
-        auto totalDuration = duration_cast<nanoseconds>(end - start).count();      
-        long long avgTime = totalDuration / NUM_COPIES;                         // Calculate the average time
+        auto totalDuration = duration_cast<nanoseconds>(end - start).count();
+        long long avgTime = totalDuration / NUM_COPIES; // Calculate the average time
 
         csvFile << containerName << ";" << operationName << ";" << dataSize << ";" << avgTime << "\n";
     }
@@ -74,8 +72,8 @@ private:
     void runTests(const string &ContainerName, int *baseData, int dataSize, ofstream &csvFile)
     {
         int testValue = 9999;
-        int middle = dataSize / 2;
-        int valueToSearch = baseData[middle];
+        int pos = rand() % (dataSize - 1); // Randomize position selection
+        int valueToSearch = baseData[pos];
 
         measureOperation<Container>(ContainerName, "AddAtBeginning", baseData, dataSize, csvFile, [&](Container &c)
                                     { c.addElementAtBeginning(testValue); });
@@ -84,7 +82,7 @@ private:
                                     { c.addElementAtEnd(testValue); });
 
         measureOperation<Container>(ContainerName, "AddAtPosition", baseData, dataSize, csvFile, [&](Container &c)
-                                    { c.addElementAtPosition(testValue, middle); });
+                                    { c.addElementAtPosition(testValue, pos); });
 
         measureOperation<Container>(ContainerName, "DeleteAtBeginning", baseData, dataSize, csvFile, [&](Container &c)
                                     { c.deleteElementAtBeginning(); });
@@ -93,7 +91,7 @@ private:
                                     { c.deleteElementAtEnd(); });
 
         measureOperation<Container>(ContainerName, "DeleteAtPosition", baseData, dataSize, csvFile, [&](Container &c)
-                                    { c.deleteElementAtPosition(middle); });
+                                    { c.deleteElementAtPosition(pos); });
 
         measureOperation<Container>(ContainerName, "Search", baseData, dataSize, csvFile, [&](Container &c)
                                     { c.searchElement(valueToSearch); });
