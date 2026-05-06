@@ -38,7 +38,7 @@ template <typename T>
 void DTQueue<T>::enqueue(const Pair<T>& newItem) {
     int currentPos{0};
     while(currentPos < data.returnSize() && 
-                            newItem.getPriority() > data.returnElementAtPosition(currentPos).getPriority()) {
+                            newItem.getPriority() >= data.returnElementAtPosition(currentPos).getPriority()) { // Using >= operator in the if statement ensures that newe element of same priority is after the one enqueued earlier
         currentPos++;
     }
     data.addElementAtPosition(newItem, currentPos);
