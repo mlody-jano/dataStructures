@@ -6,14 +6,8 @@
 
 /*
     Interactive console menu for any Queue<T> implementation.
-
-    Template parameters:
-        QueueImpl — concrete queue class (DTQueue<T>, HeapQueue<T>, ...)
-        T         — value type stored in the queue
-
-    Requirements on QueueImpl:
-        - default-constructible
-        - implements the Queue<T> interface
+    Expects two template parameters: QueueImpl -> implementation class, T -> value type.
+    Provides a interactive interface to test all queue operations and display the contents.
 */
 template <typename QueueImpl, typename T>
 class InteractiveMenu {
@@ -23,20 +17,32 @@ private:
 
     // ── Utilities ─────────────────────────────────────────────────────────────
 
+    /*
+        Clears the input.
+    */
     void clearInput() {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
+    /*
+        Pauses the execution and waits for user input.
+    */
     void pause() {
         std::cout << "\n  [Nacisnij Enter aby kontynuowac...]";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
+    /*
+        Prints a separating line.
+    */
     void printSeparator(char ch = '-', int width = 50) {
         std::cout << "  " << std::string(width, ch) << "\n";
     }
 
+    /*
+        Prints a header using the printSeparator() function.
+    */
     void printHeader(const std::string& title) {
         std::cout << "\n";
         printSeparator();
@@ -55,7 +61,7 @@ private:
         }
 
         int n = queue.size();
-        Pair<T>* snap = new Pair<T>[n];
+        Pair<T>* snap = new Pair<T>[n];                         // Creates a snapshot of queue, for displaying purposes.
 
         // Extract all in priority order (highest first)
         for (int i = 0; i < n; i++) {
@@ -76,6 +82,10 @@ private:
 
     // ── Menu operations ───────────────────────────────────────────────────────
 
+    /*
+        Unified function that enables the user to insert a self-defined key-value pair to the queue.
+        Uses try-catch statements to handle exceptions, which could crash the program.    
+    */
     void doEnqueue() {
         printHeader("ENQUEUE - Dodaj element");
         T   val;
@@ -84,10 +94,18 @@ private:
         std::cout << "  Podaj priorytet: "; std::cin >> prio;
         clearInput();
         Pair<T> p(val, prio);
-        queue.enqueue(p);
-        std::cout << "  OK: dodano (" << val << ", priorytet=" << prio << ").\n";
+        try {
+            queue.enqueue(p);
+            std::cout << "  OK: dodano (" << val << ", priorytet=" << prio << ").\n";
+        } catch (const std::exception& e) {
+            std::cout << "  BLAD: " << e.what() << "\n";
+        }
     }
 
+    /*
+        Unified function that enables the user to extract the element the the top of the queue (maximum priority).
+        Uses try-catch statements to handle exceptions, which could crash the program.
+    */
     void doExtractMax() {
         printHeader("EXTRACT MAX - Usun element o najwyzszym priorytecie");
         try {
@@ -101,6 +119,10 @@ private:
         }
     }
 
+    /*
+        Unified function that enables the user to peek the element at the top of the queue (maximum priority).
+        Uses try-catch statements to handle exceptions, which could crash the program.
+    */
     void doPeek() {
         printHeader("PEEK - Podejrzyj szczyt kolejki (bez usuwania)");
         try {
@@ -112,6 +134,10 @@ private:
         }
     }
 
+    /*
+        Unified function that enables the user to decrease the priority of a specific key-value pair.
+        Uses try-catch statements to handle exceptions, which could crash the program.
+    */
     void doDecreaseKey() {
         printHeader("DECREASE KEY - Zmniejsz priorytet elementu");
         T   val;
@@ -129,6 +155,10 @@ private:
         }
     }
 
+    /*
+        Unified function that enables the user to increase the priority of a specific key-value pair.
+        Uses try-catch statements to handle exceptions, which could crash the program.
+    */
     void doIncreaseKey() {
         printHeader("INCREASE KEY - Zwieksz priorytet elementu");
         T   val;
@@ -158,6 +188,9 @@ private:
         std::cout << "  Czy pusta     : " << (queue.isEmpty() ? "TAK" : "NIE") << "\n";
     }
 
+    /*
+        Function loading pre-defined data for visualization purposes.
+    */
     void doLoadSample() {
         printHeader("DANE TESTOWE - Zaladuj przykladowe elementy");
         while (!queue.isEmpty()) queue.extractMax();
@@ -169,7 +202,12 @@ private:
         };
         for (auto& s : samples) {
             Pair<T> p(static_cast<T>(s[0]), s[1]);
-            queue.enqueue(p);
+            try {
+                queue.enqueue(p);
+            } catch(const std::exception& e) {
+                std::cout << "  BLAD: " << e.what() << "\n";
+            }
+            
         }
         std::cout << "  Zaladowano 9 elementow testowych.\n\n";
         displayQueue();
@@ -177,6 +215,9 @@ private:
 
     // ── Menu display ──────────────────────────────────────────────────────────
 
+    /*
+        Function for printing the visual interactive menu for visualization purposes.
+    */
     void printMenu() {
         std::cout << "\n";
         std::cout << "  +--------------------------------------------------+\n";

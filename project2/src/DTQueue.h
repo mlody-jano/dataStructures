@@ -8,7 +8,7 @@
 /*
     Class declaration for a priority queue implemented as a dynamic table.
     Inherits the interface from the Queue class. The implementation is based on a dynamic array, which resizes as needed when elements are added or removed.
-    Uses Insertion Sort to maintain the order of elements based on their priority, ensuring that the highest priority element is always at the front of the queue.
+    Inserts the new element in correct position to maintain the order of elements based on their priority.
 */
 template <typename T>
 class DTQueue : public Queue<T> {
@@ -47,23 +47,26 @@ void DTQueue<T>::enqueue(const Pair<T>& newItem) {
 template <typename T>
 void DTQueue<T>::extractMax() {
     if (data.returnSize() == 0) {
-        throw runtime_error("Queue is empty");
+        throw runtime_error("Queue is empty");                  // Thrrowing an exception if the queue is empty, to prevent undefined behavior
     }
-    data.deleteElementAtEnd();
+    data.deleteElementAtEnd();                                  // Removing the last element (with highest priority)
 }
 
 template <typename T>
 const Pair<T>& DTQueue<T>::peek() const {
     if (data.returnSize() == 0) {
-        throw runtime_error("Queue is empty");
+        throw runtime_error("Queue is empty");                  // Same as in extractMax
     }
     return data.returnElementAtPosition(data.returnSize() - 1); // Returning the last element because of the fact on table being sorted while inserting elements
 };
 
 template <typename T>
+/*
+    Decreases the priority of specific item in queue. Process of decreasing key: searching for the item, deleting it, changing priority, and enqueuing it again.
+*/
 void DTQueue<T>::decreaseKey(Pair<T> item, int newPrio) {
     if(item.getPriority() <= newPrio) {
-        throw runtime_error("New priority must be lower than current. Use valid operation.");
+        throw runtime_error("New priority must be lower than current. Use valid operation.");  // Throwing an exception if new priority >= current
     }
     int foundPos{-1};
     for(int i{0}; i < data.returnSize(); i++) {
@@ -73,7 +76,7 @@ void DTQueue<T>::decreaseKey(Pair<T> item, int newPrio) {
         }
     }
     if(foundPos == -1) {
-        throw runtime_error("Element not found in queue.");
+        throw runtime_error("Element not found in queue.");                                     // Exception for when element is not found
     }
     data.deleteElementAtPosition(foundPos);
     item.setPriority(newPrio);
@@ -81,6 +84,9 @@ void DTQueue<T>::decreaseKey(Pair<T> item, int newPrio) {
 }
 
 template <typename T>
+/*
+    Increases the priority of specific item in queue. Process of increasing key: searching for the item, deleting it, changing priority, and enqueuing it again.
+*/
 void DTQueue<T>::increaseKey(Pair<T> item, int newPrio) {
     if(item.getPriority() >= newPrio) {
         throw runtime_error("New priority must be higher than current. Use valid operation.");

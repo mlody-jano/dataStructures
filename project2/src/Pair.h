@@ -2,6 +2,10 @@
 #define PAIR_H
 
 template <typename T>
+/*
+    Pair class representing the key-value pair as the record of the priority queue.
+    Provides the user with getters and setters for every private field to ensure encapsulation and safety of data.
+*/
 class Pair {
 private:
     T value;

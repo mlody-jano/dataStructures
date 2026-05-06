@@ -3,8 +3,7 @@
 #include "Pair.h"
 
 /*
-    Class template for a priority queue. Defines the interface, which is later overriden by the derived classes, ListQueue and HeapQueue.
-    Includes the definition of Pair structure, for storing a key-value pair.
+    Class template for a priority queue. Defines the interface, which is later overriden by the derived classes, DTQueue and HeapQueue.
 */
 template <typename T>
 class Queue {
