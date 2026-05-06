@@ -141,7 +141,7 @@ int Heap<T>::rightChild(int index)
 template <typename T>
 bool Heap<T>::higherPriority(const T& a, const T& b) const
 {
-    return a.priority > b.priority;
+    return a.getPriority() > b.getPriority();
 }
 
 template <typename T>

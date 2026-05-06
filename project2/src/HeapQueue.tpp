@@ -4,7 +4,7 @@
 #endif
 
 template <typename T>
-void HeapQueue<T>::enqueue(const Pair& item)
+void HeapQueue<T>::enqueue(const Pair<T>& item)
 {
     heap.insert(item);
 }
@@ -16,29 +16,43 @@ void HeapQueue<T>::extractMax()
 }
 
 template <typename T>
-const typename HeapQueue<T>::Pair& HeapQueue<T>::peek() const
+const Pair<T>& HeapQueue<T>::peek() const
 {
     return heap.findMax();
 }
 
 template <typename T>
-void HeapQueue<T>::decreaseKey(Pair item, int newPrio)
+void HeapQueue<T>::decreaseKey(Pair<T> item, int newPrio)
 {
     int index = findIndex(item);
-    if (index != -1) {
-        heap.at(index).priority = newPrio;
-        heap.repairDown(index);
+
+    if (index == -1) {
+        throw std::invalid_argument("Item not found in the queue");
     }
+
+    if (newPrio >= heap.at(index).getPriority()) {
+        throw std::invalid_argument("New priority must be less than current priority");
+    }
+
+    heap.at(index).setPriority(newPrio);
+    heap.repairDown(index);
 }
 
 template <typename T>
-void HeapQueue<T>::increaseKey(Pair item, int newPrio)
+void HeapQueue<T>::increaseKey(Pair<T> item, int newPrio)
 {
     int index = findIndex(item);
-    if (index != -1) {
-        heap.at(index).priority = newPrio;
-        heap.repairUp(index);
+
+    if (index == -1) {
+        throw std::invalid_argument("Item not found in the queue");
     }
+
+    if (newPrio <= heap.at(index).getPriority()) {
+        throw std::invalid_argument("New priority must be greater than current priority");
+    }
+
+    heap.at(index).setPriority(newPrio);
+    heap.repairUp(index);
 }
 
 template <typename T>
@@ -54,10 +68,10 @@ int HeapQueue<T>::size() const
 }
 
 template <typename T>
-int HeapQueue<T>::findIndex(const Pair& item) const
+int HeapQueue<T>::findIndex(const Pair<T>& item) const
 {
     for (int i = 0; i < heap.returnSize(); i++) {
-        if (heap.at(i).item == item.item) {
+        if (heap.at(i).getValue() == item.getValue() && heap.at(i).getPriority() == item.getPriority()) {
             return i;
         }
     }

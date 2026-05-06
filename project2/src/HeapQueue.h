@@ -7,23 +7,21 @@ template <typename T>
 class HeapQueue : public Queue<T>
 {
 public:
-    using Pair = typename Queue<T>::Pair;
-
     HeapQueue() = default;
     ~HeapQueue() override = default;
 
-    void           enqueue(const Pair& item) override;       
+    void           enqueue(const Pair<T>& item) override;       
     void           extractMax() override;                    
-    const Pair&    peek() const override;                   
-    void           decreaseKey(Pair item, int newPrio) override;        
-    void           increaseKey(Pair item, int newPrio) override;        
+    const Pair<T>&    peek() const override;                   
+    void           decreaseKey(Pair<T> item, int newPrio) override;        
+    void           increaseKey(Pair<T> item, int newPrio) override;        
     bool           isEmpty() const override;                 
     int            size() const override;                    
 
 private:
-    Heap<Pair> heap;
+    Heap<Pair<T>> heap;
 
-    int findIndex(const Pair& item) const;
+    int findIndex(const Pair<T>& item) const;
 };
 
 #ifndef HEAPQUEUE_TPP

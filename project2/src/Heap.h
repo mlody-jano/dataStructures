@@ -1,4 +1,6 @@
 #pragma once
+#include <stdexcept>
+#include <utility>
 
 template <typename T>
 class Heap
