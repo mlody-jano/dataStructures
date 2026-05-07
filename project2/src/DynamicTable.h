@@ -4,6 +4,8 @@
 #include <iostream>
 #include "Pair.h"
 
+#pragma once
+
 using namespace std;
 
 /*
@@ -16,6 +18,8 @@ class DynamicTable
 public:
 
     DynamicTable();
+    DynamicTable(const DynamicTable<T>&);
+    DynamicTable<T>& operator=(const DynamicTable<T>&);
     ~DynamicTable();
 
     inline int returnSize() const { return size; };
@@ -52,6 +56,37 @@ template <typename T>
 DynamicTable<T>::DynamicTable() : capacity{100}, size{0}, table{new Pair<T>[capacity]} {}
 
 /*
+    Copy constructor for DynamicTable
+    Performs a deep copy — allocates a new array and copies all elements.
+    Required so that std::vector<DynamicTable<T>> (and thus std::vector<DTQueue<T>>)
+    can clone queue instances in O(n) instead of re-filling them via enqueue in O(n²).
+*/
+template <typename T>
+DynamicTable<T>::DynamicTable(const DynamicTable<T>& other)
+    : capacity{other.capacity}, size{other.size}, table{new Pair<T>[other.capacity]}
+{
+    for (int i = 0; i < size; i++)
+        table[i] = other.table[i];
+}
+
+/*
+    Copy assignment operator for DynamicTable
+    Handles self-assignment safely; releases old memory before allocating new.
+*/
+template <typename T>
+DynamicTable<T>& DynamicTable<T>::operator=(const DynamicTable<T>& other)
+{
+    if (this == &other) return *this;
+    delete[] table;
+    capacity = other.capacity;
+    size     = other.size;
+    table    = new Pair<T>[capacity];
+    for (int i = 0; i < size; i++)
+        table[i] = other.table[i];
+    return *this;
+}
+
+/*
     Destructor for DynamicTable
     Deallocates the memory used by the dynamic table
 */
@@ -69,16 +104,20 @@ template <typename T>
 void DynamicTable<T>::addElementAtBeginning(const Pair<T>& element)
 {
     checkCapacity();
-    if (size == 0) { // If the table is empty, simply add the element at the first position
+    if (size == 0)
+    { // If the table is empty, simply add the element at the first position
         table[0] = element;
         size++;
     }
-    for (int i = size; i > 0; i--) {
-        table[i] = table[i - 1];
+    else if (size < capacity)
+    {
+        for (int i = size; i > 0; i--)
+        {
+            table[i] = table[i - 1];
+        }
+        table[0] = element;
+        size++;
     }
-
-    table[0] = element;
-    size++;
 }
 
 /*
@@ -252,9 +291,8 @@ void DynamicTable<T>::display() const
 template <typename T>
 const Pair<T>& DynamicTable<T>::returnElementAtPosition(int position) const
 {
-    if (position < 0 || position >= size) {
-        throw out_of_range("Invalid position.");
-    }
+    if (position < 0 || position >= size)
+        throw std::out_of_range("Invalid position.");
     return table[position];
 }
 

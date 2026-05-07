@@ -8,8 +8,10 @@
 #include <chrono>
 #include <limits>
 #include <numeric>
+#include <random>
 #include <filesystem>
 #include "Pair.h"
+#include "HeapQueue.h"
 
 /*
     Performance tester for any Queue<T> implementation.
@@ -24,8 +26,8 @@
         ...
 
     Output CSV per input file — two sections:
-        [raw]     structure, operation, n, repetition, time_us
-        [summary] structure, operation, n, repetitions, avg_us, min_us, max_us
+        [raw]     structure, operation, n, repetition, time_ns
+        [summary] structure, operation, n, repetitions, avg_ns, min_ns, max_ns
 
     Template parameters:
         QueueImpl — concrete queue class (must be default-constructible)
@@ -41,6 +43,10 @@
     Defined outside the template so DTQueue and HeapQueue testers can
     exchange config objects without type-conversion errors.
 */
+
+std::random_device rd;
+std::mt19937 gen(rd());
+
 struct BenchmarkConfig {
     std::string      inputDir;
     std::string      filePrefix;
@@ -55,23 +61,23 @@ private:
     std::string implName;
 
     using Clock = std::chrono::high_resolution_clock;
-    using us    = std::chrono::microseconds;
+    using ns    = std::chrono::nanoseconds;
 
     struct Result {
         std::string operation;
         int         n;
-        int         repetition;
-        long long   time_us;
+        int         sample_count;   // reps * COPIES — total number of measurements averaged
+        double   avg_ns;         // averaged time across all samples
     };
 
     // ── Timing ────────────────────────────────────────────────────────────────
 
     template <typename Func>
-    long long measure(Func&& f) {
+    double measure(Func&& f) {
         auto t0 = Clock::now();
         f();
         auto t1 = Clock::now();
-        return std::chrono::duration_cast<us>(t1 - t0).count();
+        return std::chrono::duration_cast<ns>(t1 - t0).count();
     }
 
     // ── Directory scan ────────────────────────────────────────────────────────
@@ -154,52 +160,46 @@ private:
         file << "# source:    " << sourceFile << "\n";
         file << "\n";
 
-        // Raw section
-        file << "structure,operation,n,repetition,time_us\n";
+        // Raw section — one averaged row per (operation, n)
+        file << "structure,operation,n,sample_count,avg_ns\n";
         for (const auto& r : results)
-            file << implName     << ","
-                 << r.operation  << ","
-                 << r.n          << ","
-                 << r.repetition << ","
-                 << r.time_us    << "\n";
+            file << implName       << ","
+                 << r.operation    << ","
+                 << r.n            << ","
+                 << r.sample_count << ","
+                 << r.avg_ns       << "\n";
 
-        // Summary section — aggregate per (operation, n)
-        file << "\n";
-        file << "structure,operation,n,repetitions,avg_us,min_us,max_us\n";
-
-        std::vector<std::pair<std::string, int>> keys;
-        for (const auto& r : results) {
-            auto key = std::make_pair(r.operation, r.n);
-            if (std::find(keys.begin(), keys.end(), key) == keys.end())
-                keys.push_back(key);
-        }
-
-        for (const auto& key : keys) {
-            std::vector<long long> times;
-            for (const auto& r : results)
-                if (r.operation == key.first && r.n == key.second)
-                    times.push_back(r.time_us);
-
-            if (times.empty()) continue;
-            long long sum = std::accumulate(times.begin(), times.end(), 0LL);
-            long long mn  = *std::min_element(times.begin(), times.end());
-            long long mx  = *std::max_element(times.begin(), times.end());
-
-            file << implName                                  << ","
-                 << key.first                                 << ","
-                 << key.second                                << ","
-                 << times.size()                              << ","
-                 << static_cast<long long>(static_cast<double>(sum) / times.size()) << ","
-                 << mn                                        << ","
-                 << mx                                        << "\n";
-        }
+        // Summary section — identical to raw (already averaged over reps*COPIES)
+        file << "# summary \n";
+        file << "structure,operation,n,sample_count,avg_ns\n";
+        for (const auto& r : results)
+            file << implName       << ","
+                 << r.operation    << ","
+                 << r.n            << ","
+                 << r.sample_count << ","
+                 << r.avg_ns       << "\n";
     }
 
     // ── Per-size benchmark ────────────────────────────────────────────────────
 
+    static constexpr int COPIES = 100;   // number of independent queue instances per rep
+
+    /*
+        For each operation:
+          1. Build COPIES pre-populated queues (identical state, independent objects).
+          2. Repeat `reps` times:
+               for each copy — measure the operation once, record the time.
+          3. Compute avg / min / max over all (COPIES * reps) samples and push
+             a single Result row to `results`.
+
+        Using multiple copies eliminates measurement bias caused by cache warm-up
+        or queue-state side effects (e.g. extractMax empties the queue, so each
+        copy provides a fresh independent starting point for the next rep).
+    */
     void runForSize(int n, int reps,
                     const std::vector<Pair<T>>& data,
                     std::vector<Result>&         results) {
+
         int useN = std::min(n, static_cast<int>(data.size()));
 
         if (useN < n)
@@ -207,47 +207,119 @@ private:
                       << " elementow, testowanie dla n=" << useN << "\n";
 
         std::cout << "    n=" << useN
-                  << "  [" << reps << " powtorzen]... ";
+                  << "  [" << reps << " rep x " << COPIES << " kopii]... ";
         std::cout.flush();
 
-        for (int rep = 1; rep <= reps; rep++) {
+        // ── Collect per-rep averaged times ────────────────────────────────────
+        //
+        // Each repetition:
+        //   1. Build ONE reference queue via enqueue (O(n^2) for DTQueue) — once.
+        //   2. Clone it COPIES times using the copy constructor — O(n) per clone.
+        //   3. Execute the target operation on ALL COPIES in one timed block,
+        //      then divide: avg = (end - start) / COPIES.
+        //
+        // Cost per rep: O(n^2) build + O(COPIES*n) clone — instead of the
+        // previous O(COPIES*n^2) which dominated the entire measurement.
+        //
+        std::vector<double> enqTimes, peekTimes, extTimes, decTimes, incTimes, sizeTimes;
+        enqTimes .reserve(reps);
+        peekTimes.reserve(reps);
+        extTimes .reserve(reps);
+        decTimes .reserve(reps);
+        incTimes .reserve(reps);
+        sizeTimes.reserve(reps);
 
-            // enqueue — n insertions into empty queue
+        const Pair<T> extraElement = data[useN > 0 ? useN - 1 : 0];
+
+        for (int rep = 0; rep < reps; rep++) {
+
+            // Build reference queues once per rep
+            QueueImpl refFull;                              // n elements  — for peek / extractMax
+            for (int j = 0; j < useN; j++)
+                refFull.enqueue(data[j]);
+
+            QueueImpl refEnq;                               // n-1 elements — for enqueue
+            for (int j = 0; j < useN - 1; j++)
+                refEnq.enqueue(data[j]);
+
+            // ── enqueue: clone refEnq, measure n-th insertion ────────────────
             {
-                QueueImpl q;
-                long long t = measure([&]() {
-                    for (int i = 0; i < useN; i++) q.enqueue(data[i]);
+                std::vector<QueueImpl> q(COPIES, refEnq);  // copy-constructor x COPIES — O(n) each
+                double t = measure([&]() {
+                    for (int i = 0; i < COPIES; i++)
+                        q[i].enqueue(extraElement);
                 });
-                results.push_back({"enqueue", useN, rep, t});
+                enqTimes.push_back(t / COPIES);
             }
 
-            // peek — single read on populated queue
-            // peek() returns const Pair<T>& — copy to a local variable to prevent
-            // the compiler from optimising the call away entirely.
+            // ── peek: clone refFull, measure single peek ──────────────────────
             {
-                QueueImpl q;
-                for (int i = 0; i < useN; i++) q.enqueue(data[i]);
+                std::vector<QueueImpl> q(COPIES, refFull);
                 Pair<T> peekResult;
-                long long t = measure([&]() {
-                    if (!q.isEmpty()) peekResult = q.peek();
+                double t = measure([&]() {
+                    for (int i = 0; i < COPIES; i++)
+                        peekResult = q[i].peek();
                 });
                 (void)peekResult;
-                results.push_back({"peek", useN, rep, t});
+                peekTimes.push_back(t / COPIES);
             }
 
-            // extractMax — n/2 extractions
+            // ── extractMax: clone refFull, measure single removal ─────────────
             {
-                int xCount = useN / 2;
-                QueueImpl q;
-                for (int i = 0; i < useN; i++) q.enqueue(data[i]);
-                long long t = measure([&]() {
-                    for (int i = 0; i < xCount && !q.isEmpty(); i++)
-                        q.extractMax();
+                std::vector<QueueImpl> q(COPIES, refFull);
+                double t = measure([&]() {
+                    for (int i = 0; i < COPIES; i++)
+                        q[i].extractMax();
                 });
-                results.push_back({"extractMax_x" + std::to_string(xCount),
-                                   useN, rep, t});
+                extTimes.push_back(t / COPIES);
             }
+            // -- decreaseKey
+            {
+                std::vector<QueueImpl> q(COPIES, refFull);
+                Pair<T> element = data[gen() % useN];
+                double t = measure([&]() {
+                    for (int i = 0; i < COPIES; i++)
+                        q[i].decreaseKey(element, element.getPriority() - 1);
+                });
+                decTimes.push_back(t / COPIES);
+            }
+            // -- increaseKey
+            {
+                Pair<T> element = data[gen() % useN];
+                std::vector<QueueImpl> q(COPIES, refFull);
+                double t = measure([&]() {
+                    for (int i = 0; i < COPIES; i++)
+                        q[i].increaseKey(element, element.getPriority() + 1);
+                });
+                incTimes.push_back(t / COPIES);
+            }
+            // -- size
+            {
+                std::vector<QueueImpl> q(COPIES, refFull);
+                double t = measure([&]() {
+                    for (int i = 0; i < COPIES; i++)
+                        q[i].size();
+                });
+                sizeTimes.push_back(t / COPIES);
+            }
+
         }
+
+        // ── Aggregate: one Result row per operation ───────────────────────────
+        auto pushResult = [&](const std::string& op,
+                               std::vector<double>& times) {
+            double sum = std::accumulate(times.begin(), times.end(), 0LL);
+            double avg = static_cast<double>(
+                                static_cast<double>(sum) / times.size());
+            results.push_back({op, useN, reps * COPIES, avg});
+        };
+
+        pushResult("enqueue",    enqTimes);
+        pushResult("peek",       peekTimes);
+        pushResult("extractMax", extTimes);
+        pushResult("decreaseKey", decTimes);
+        pushResult("increaseKey", incTimes);
+        pushResult("size",       sizeTimes);
 
         std::cout << "OK\n";
     }
