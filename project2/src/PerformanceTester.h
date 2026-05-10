@@ -13,40 +13,16 @@
 #include "Pair.h"
 #include "HeapQueue.h"
 
-/*
-    Performance tester for any Queue<T> implementation.
-
-    Scans an input directory for all *.csv files matching a given prefix,
-    runs tests on each one separately, and writes one result CSV per input
-    file into a designated output directory.
-
-    Input CSV format (with header):
-        value,priority
-        42,5
-        ...
-
-    Output CSV per input file — two sections:
-        [raw]     structure, operation, n, repetition, time_ns
-        [summary] structure, operation, n, repetitions, avg_ns, min_ns, max_ns
-
-    Template parameters:
-        QueueImpl — concrete queue class (must be default-constructible)
-        T         — value type stored in the queue
-
-    Tested operations per size n:
-        enqueue     — n insertions into empty queue
-        peek        — 1 call on populated queue of size n
-        extractMax  — n/2 extractions from populated queue
-*/
-/*
-    Plain-data struct shared by all PerformanceTester instantiations.
-    Defined outside the template so DTQueue and HeapQueue testers can
-    exchange config objects without type-conversion errors.
-*/
-
+/**
+ * random numbers generator based on Mersenne Twister algorythm
+ */
 std::random_device rd;
 std::mt19937 gen(rd());
 
+/**
+ * structure BenchmarkConfig
+ * provides a structure of test starting conditions to easily pass them to testing functions
+ */
 struct BenchmarkConfig {
     std::string      inputDir;
     std::string      filePrefix;
@@ -55,6 +31,14 @@ struct BenchmarkConfig {
     int              repetitions = 1;
 };
 
+/**
+ * class PerformanceTester
+ * @tparam QueueImpl refers to implementation of queue, @tparam T referes to the type of value in @class Pair
+ * provides a testing interface to effectively carry out tests of operations on priority queues
+ * input -> reads .csv files in source directory @dir
+ * output -> saves .csv files in target directory @dir including 2 sections: raw_data and summary
+ * output format -> structure, operation, n, repetition, time_ns
+ */
 template <typename QueueImpl, typename T>
 class PerformanceTester {
 private:
@@ -63,15 +47,24 @@ private:
     using Clock = std::chrono::high_resolution_clock;
     using ns    = std::chrono::nanoseconds;
 
+    /**
+     * structure Result
+     * provides a structure of data meant to be saved to .csv file after test
+     */
     struct Result {
         std::string operation;
         int         n;
         int         sample_count;   // reps * COPIES — total number of measurements averaged
-        double   avg_ns;         // averaged time across all samples
+        double      avg_ns;         // averaged time across all samples
     };
 
-    // ── Timing ────────────────────────────────────────────────────────────────
+    // time measurement
 
+    /**
+     * private method used to measure time of operation
+     * @tparam specifies the function being currently measured
+     * @return time taken to finish function
+     */
     template <typename Func>
     double measure(Func&& f) {
         auto t0 = Clock::now();
@@ -80,14 +73,14 @@ private:
         return std::chrono::duration_cast<ns>(t1 - t0).count();
     }
 
-    // ── Directory scan ────────────────────────────────────────────────────────
+    // directory scan
 
-    /*
-        Returns a sorted list of all *.csv files in `dir` whose filename
-        starts with `prefix` (empty prefix = all csv files).
-    */
-    std::vector<std::string> scanDirectory(const std::string& dir,
-                                            const std::string& prefix) {
+    /**
+     * private method to search for files in source directory
+     * @param dir refers to source directory, @param prefix specifies target files
+     * @return sorted vector of files in source directory
+     */
+    std::vector<std::string> scanDirectory(const std::string& dir, const std::string& prefix) {
         std::vector<std::string> files;
         std::error_code ec;
 
@@ -97,16 +90,16 @@ private:
         }
 
         for (const auto& entry : std::filesystem::directory_iterator(dir, ec)) {
-            if (ec) break;
-            if (!entry.is_regular_file()) continue;
+            if (ec) {break;}
+            if (!entry.is_regular_file()) {continue;}
 
             std::string fname = entry.path().filename().string();
 
             // Must end with .csv
-            if (fname.size() < 4 || fname.substr(fname.size() - 4) != ".csv") continue;
+            if (fname.size() < 4 || fname.substr(fname.size() - 4) != ".csv") {continue;}
 
             // Must start with prefix (if given)
-            if (!prefix.empty() && fname.substr(0, prefix.size()) != prefix) continue;
+            if (!prefix.empty() && fname.substr(0, prefix.size()) != prefix) {continue;}
 
             files.push_back(entry.path().string());
         }
@@ -115,8 +108,13 @@ private:
         return files;
     }
 
-    // ── CSV I/O ───────────────────────────────────────────────────────────────
+    // loading data from .csv
 
+    /**
+     * private method to load data from .csv file into structure
+     * @param path refers to the source data file
+     * @return vector of type @class Pair of loaded data
+     */
     std::vector<Pair<T>> loadCSV(const std::string& path) {
         std::vector<Pair<T>> data;
         std::ifstream file(path);
@@ -126,17 +124,16 @@ private:
         }
 
         std::string line;
-        std::getline(file, line);   // skip header
+        std::getline(file, line);   // skip header row from input file
 
         while (std::getline(file, line)) {
-            if (line.empty() || line[0] == '#') continue;
-            // Strip trailing CR (Windows line endings)
-            if (!line.empty() && line.back() == '\r') line.pop_back();
+            if (line.empty() || line[0] == '#') {continue;}
+            if (!line.empty() && line.back() == '\r') {line.pop_back();}
 
             std::stringstream ss(line);
             std::string valStr, prioStr;
-            if (!std::getline(ss, valStr,  ',')) continue;
-            if (!std::getline(ss, prioStr, ',')) continue;
+            if (!std::getline(ss, valStr,  ',')) {continue;}
+            if (!std::getline(ss, prioStr, ',')) {continue;}
             try {
                 T   val  = static_cast<T>(std::stoi(valStr));
                 int prio = std::stoi(prioStr);
@@ -146,6 +143,10 @@ private:
         return data;
     }
 
+    /**
+     * private method to save data from tests to target .csv file
+     * @param path refers to target file path, @param sourceFile refers to source file, @param result refers to the vector of type @class Pair of results
+     */
     void saveCSV(const std::string& path,
                  const std::string& sourceFile,
                  const std::vector<Result>& results) {
@@ -155,12 +156,12 @@ private:
             return;
         }
 
-        // Metadata header
+        // header
         file << "# structure: " << implName << "\n";
         file << "# source:    " << sourceFile << "\n";
         file << "\n";
 
-        // Raw section — one averaged row per (operation, n)
+        // raw data section
         file << "structure,operation,n,sample_count,avg_ns\n";
         for (const auto& r : results)
             file << implName       << ","
@@ -169,7 +170,7 @@ private:
                  << r.sample_count << ","
                  << r.avg_ns       << "\n";
 
-        // Summary section — identical to raw (already averaged over reps*COPIES)
+        // summary section
         file << "# summary \n";
         file << "structure,operation,n,sample_count,avg_ns\n";
         for (const auto& r : results)
@@ -180,47 +181,26 @@ private:
                  << r.avg_ns       << "\n";
     }
 
-    // ── Per-size benchmark ────────────────────────────────────────────────────
+    // test per size
 
     static constexpr int COPIES = 100;   // number of independent queue instances per rep
 
-    /*
-        For each operation:
-          1. Build COPIES pre-populated queues (identical state, independent objects).
-          2. Repeat `reps` times:
-               for each copy — measure the operation once, record the time.
-          3. Compute avg / min / max over all (COPIES * reps) samples and push
-             a single Result row to `results`.
-
-        Using multiple copies eliminates measurement bias caused by cache warm-up
-        or queue-state side effects (e.g. extractMax empties the queue, so each
-        copy provides a fresh independent starting point for the next rep).
-    */
+    /**
+     * private method for running test for a specific data structure size
+     * @param n refers to size of structure, @param reps refers to repetition times, @param data refers to original data structure, @param results refers to vector of results
+     */
     void runForSize(int n, int reps,
                     const std::vector<Pair<T>>& data,
                     std::vector<Result>&         results) {
 
-        int useN = std::min(n, static_cast<int>(data.size()));
+        int useN = std::min(n, static_cast<int>(data.size()));              // used elements
 
-        if (useN < n)
-            std::cout << "  UWAGA: dostepnych " << data.size()
-                      << " elementow, testowanie dla n=" << useN << "\n";
+        if (useN < n) {std::cout << "  UWAGA: dostepnych " << data.size() << " elementow, testowanie dla n=" << useN << "\n";}
 
-        std::cout << "    n=" << useN
-                  << "  [" << reps << " rep x " << COPIES << " kopii]... ";
+        std::cout << "    n=" << useN << "  [" << reps << " rep x " << COPIES << " kopii]... ";
         std::cout.flush();
 
-        // ── Collect per-rep averaged times ────────────────────────────────────
-        //
-        // Each repetition:
-        //   1. Build ONE reference queue via enqueue (O(n^2) for DTQueue) — once.
-        //   2. Clone it COPIES times using the copy constructor — O(n) per clone.
-        //   3. Execute the target operation on ALL COPIES in one timed block,
-        //      then divide: avg = (end - start) / COPIES.
-        //
-        // Cost per rep: O(n^2) build + O(COPIES*n) clone — instead of the
-        // previous O(COPIES*n^2) which dominated the entire measurement.
-        //
+        // vectors for times of operations
         std::vector<double> enqTimes, peekTimes, extTimes, decTimes, incTimes, sizeTimes;
         enqTimes .reserve(reps);
         peekTimes.reserve(reps);
@@ -235,82 +215,64 @@ private:
 
             // Build reference queues once per rep
             QueueImpl refFull;                              // n elements  — for peek / extractMax
-            for (int j = 0; j < useN; j++)
-                refFull.enqueue(data[j]);
+            for (int j = 0; j < useN; j++) {refFull.enqueue(data[j]);}
 
             QueueImpl refEnq;                               // n-1 elements — for enqueue
-            for (int j = 0; j < useN - 1; j++)
-                refEnq.enqueue(data[j]);
+            for (int j = 0; j < useN - 1; j++) {refEnq.enqueue(data[j]);}
 
-            // ── enqueue: clone refEnq, measure n-th insertion ────────────────
+            // measuring enqueue
             {
                 std::vector<QueueImpl> q(COPIES, refEnq);  // copy-constructor x COPIES — O(n) each
-                double t = measure([&]() {
-                    for (int i = 0; i < COPIES; i++)
-                        q[i].enqueue(extraElement);
-                });
+                double t = measure([&]() { for (int i = 0; i < COPIES; i++) { q[i].enqueue(extraElement);}});
                 enqTimes.push_back(t / COPIES);
             }
 
-            // ── peek: clone refFull, measure single peek ──────────────────────
+            // measuring peek
             {
                 std::vector<QueueImpl> q(COPIES, refFull);
                 Pair<T> peekResult;
                 double t = measure([&]() {
-                    for (int i = 0; i < COPIES; i++)
-                        peekResult = q[i].peek();
-                });
+                    for (int i = 0; i < COPIES; i++) { peekResult = q[i].peek();}});
                 (void)peekResult;
                 peekTimes.push_back(t / COPIES);
             }
 
-            // ── extractMax: clone refFull, measure single removal ─────────────
+            // measuring extractMax
             {
                 std::vector<QueueImpl> q(COPIES, refFull);
                 double t = measure([&]() {
-                    for (int i = 0; i < COPIES; i++)
-                        q[i].extractMax();
-                });
+                    for (int i = 0; i < COPIES; i++) { q[i].extractMax();}});
                 extTimes.push_back(t / COPIES);
             }
-            // -- decreaseKey
+            // measuring decreaseKey
             {
                 std::vector<QueueImpl> q(COPIES, refFull);
-                Pair<T> element = data[gen() % useN];
-                double t = measure([&]() {
-                    for (int i = 0; i < COPIES; i++)
-                        q[i].decreaseKey(element, element.getPriority() - 1);
-                });
+                Pair<T> element = data[gen() % useN];       // selecting random element
+                double t = measure([&]() { for (int i = 0; i < COPIES; i++) {q[i].decreaseKey(element, element.getPriority() - 1);}});
                 decTimes.push_back(t / COPIES);
             }
-            // -- increaseKey
+            // measuring increaseKey
             {
-                Pair<T> element = data[gen() % useN];
                 std::vector<QueueImpl> q(COPIES, refFull);
+                Pair<T> element = data[gen() % useN];       // selecting random element
                 double t = measure([&]() {
-                    for (int i = 0; i < COPIES; i++)
-                        q[i].increaseKey(element, element.getPriority() + 1);
-                });
+                    for (int i = 0; i < COPIES; i++) { q[i].increaseKey(element, element.getPriority() + 1);}});
                 incTimes.push_back(t / COPIES);
             }
-            // -- size
+            // measuring size
             {
                 std::vector<QueueImpl> q(COPIES, refFull);
                 double t = measure([&]() {
-                    for (int i = 0; i < COPIES; i++)
-                        q[i].size();
-                });
+                    for (int i = 0; i < COPIES; i++) { q[i].size();}});
                 sizeTimes.push_back(t / COPIES);
             }
 
         }
 
-        // ── Aggregate: one Result row per operation ───────────────────────────
-        auto pushResult = [&](const std::string& op,
-                               std::vector<double>& times) {
-            double sum = std::accumulate(times.begin(), times.end(), 0LL);
-            double avg = static_cast<double>(
-                                static_cast<double>(sum) / times.size());
+        // accumulate data into one row
+        auto pushResult = [&](const std::string& op, std::vector<double>& times) {
+            double sum = std::accumulate(times.begin(), times.end(), 0.0);
+            double avg = static_cast<double>(sum) / times.size();
             results.push_back({op, useN, reps * COPIES, avg});
         };
 
@@ -324,14 +286,17 @@ private:
         std::cout << "OK\n";
     }
 
-    // ── Per-file run ──────────────────────────────────────────────────────────
-
+    /**
+     * private method used for running test for entire data file
+     * @param inputPath refers to path to source file, @param outputDir refers to target directory, @param sizes is a list of sizes to test, @param reps amount of reps
+     */
     void runForFile(const std::string& inputPath,
                     const std::string& outputDir,
                     const std::vector<int>& sizes,
                     int reps) {
 
-        // Derive output filename: results_{implName}_{inputStem}.csv
+        // output filename -> results_{implName}_{inputStem}.csv
+
         std::string stem = std::filesystem::path(inputPath).stem().string();
         std::string outPath = outputDir + "/results_" + implName + "_" + stem + ".csv";
 
@@ -354,13 +319,20 @@ private:
         std::cout << "  -> Wyniki: " << outPath << "\n";
     }
 
-    // ── Console helpers ───────────────────────────────────────────────────────
+    // utility functions
 
+    /**
+     * private method for clearing input after carrying out operations
+     */
     void clearInput() {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
+    /**
+     * private method to ask user for sizes to test
+     * @return vector of sizes
+     */
     std::vector<int> askSizes() {
         std::cout << "  Rozmiary n (oddzielone spacjami, zakoncz 0)\n";
         std::cout << "  np. 1000 2000 5000 0: ";
@@ -373,12 +345,16 @@ private:
     }
 
 public:
+    /**
+     * constructor of class PerformanceTester
+     * @param name refers to implementation of queue
+     */
     explicit PerformanceTester(const std::string& name) : implName(name) {}
 
-    /*
-        Run with a pre-built config — no console prompting.
-        Used by MainMenu when both implementations share the same session config.
-    */
+    /**
+     * public method to run test for source data file with a user defined test config
+     * @param cfg uses @struct BenchmarkConfig to pass test parameters to testing functions
+     */
     void runWith(const BenchmarkConfig& cfg) {
         std::cout << "\n  === TESTY WYDAJNOSCIOWE: " << implName << " ===\n";
 
@@ -397,6 +373,9 @@ public:
         std::cout << "\n  Testy zakonczone. Wyniki w: " << cfg.outputDir << "\n";
     }
 
+    /**
+     * public method to run test without a config, requiring user to define test parameters from console
+     */
     void run() {
         std::cout << "\n  === TESTY WYDAJNOSCIOWE: " << implName << " ===\n\n";
 

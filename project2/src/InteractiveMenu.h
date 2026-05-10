@@ -4,45 +4,46 @@
 #include <string>
 #include "Pair.h"
 
-/*
-    Interactive console menu for any Queue<T> implementation.
-    Expects two template parameters: QueueImpl -> implementation class, T -> value type.
-    Provides a interactive interface to test all queue operations and display the contents.
-*/
+/**
+ * class InteractiveMenu
+ * @tparam QueueImpl refers to implementation of queue, @tparam value type of Pair
+ * provides a interactive interface to test all implemented queues and their operations
+ */
 template <typename QueueImpl, typename T>
 class InteractiveMenu {
 private:
     QueueImpl   queue;
     std::string implName;
 
-    // ── Utilities ─────────────────────────────────────────────────────────────
+    // utility functions
 
-    /*
-        Clears the input.
-    */
+    /**
+     * private method that clears the input buffer after any operation
+     */
     void clearInput() {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    /*
-        Pauses the execution and waits for user input.
-    */
+    /**
+     * private method that forces the program to wait for user interaction
+     */
     void pause() {
         std::cout << "\n  [Nacisnij Enter aby kontynuowac...]";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    /*
-        Prints a separating line.
-    */
-    void printSeparator(char ch = '-', int width = 50) {
-        std::cout << "  " << std::string(width, ch) << "\n";
-    }
+    /**
+     * private method that prints a separating line for better viewing
+     * @param ch specifies the separator, @param width specifies the width of line 
+     */
+    void printSeparator(char ch = '-', int width = 50) { std::cout << "  " << std::string(width, ch) << "\n";}
 
-    /*
-        Prints a header using the printSeparator() function.
-    */
+    /**
+     * private method for printing the title of operation being carried out
+     * uses @fn printSeparator() to separate the title
+     * @param title specifies the title meant to be printed
+     */
     void printHeader(const std::string& title) {
         std::cout << "\n";
         printSeparator();
@@ -50,10 +51,10 @@ private:
         printSeparator();
     }
 
-    /*
-        Non-destructive display: snapshot via peek/extractMax, then re-insert.
-        Works for any Queue implementation without requiring iterator access.
-    */
+    /**
+     * private method for displaying the queue
+     * creates a snapshot of queue, then deletes it
+     */
     void displayQueue() {
         if (queue.isEmpty()) {
             std::cout << "  [Kolejka jest pusta]\n";
@@ -61,9 +62,8 @@ private:
         }
 
         int n = queue.size();
-        Pair<T>* snap = new Pair<T>[n];                         // Creates a snapshot of queue, for displaying purposes.
+        Pair<T>* snap = new Pair<T>[n];
 
-        // Extract all in priority order (highest first)
         for (int i = 0; i < n; i++) {
             snap[i] = queue.peek();
             queue.extractMax();
@@ -80,12 +80,13 @@ private:
         delete[] snap;
     }
 
-    // ── Menu operations ───────────────────────────────────────────────────────
+    // polymorphic queue operations
 
-    /*
-        Unified function that enables the user to insert a self-defined key-value pair to the queue.
-        Uses try-catch statements to handle exceptions, which could crash the program.    
-    */
+    /** 
+     * private method for enqueuing an element
+     * uses @fn enqueue() to add element to queue
+     * uses try-catch to prevent program crashes
+     */
     void doEnqueue() {
         printHeader("ENQUEUE - Dodaj element");
         T   val;
@@ -97,15 +98,14 @@ private:
         try {
             queue.enqueue(p);
             std::cout << "  OK: dodano (" << val << ", priorytet=" << prio << ").\n";
-        } catch (const std::exception& e) {
-            std::cout << "  BLAD: " << e.what() << "\n";
-        }
+        } catch (const std::exception& e) { std::cout << "  BLAD: " << e.what() << "\n";}
     }
 
-    /*
-        Unified function that enables the user to extract the element the the top of the queue (maximum priority).
-        Uses try-catch statements to handle exceptions, which could crash the program.
-    */
+    /** 
+     * private method for extracting the maximum element
+     * uses @fn extractMax() to extract the maximum element
+     * uses try-catch to prevent program crashes
+     */
     void doExtractMax() {
         printHeader("EXTRACT MAX - Usun element o najwyzszym priorytecie");
         try {
@@ -114,30 +114,28 @@ private:
                       << ", priorytet=" << top.getPriority() << "\n";
             queue.extractMax();
             std::cout << "  OK: element usuniety.\n";
-        } catch (const std::exception& e) {
-            std::cout << "  BLAD: " << e.what() << "\n";
-        }
+        } catch (const std::exception& e) { std::cout << "  BLAD: " << e.what() << "\n";}
     }
 
-    /*
-        Unified function that enables the user to peek the element at the top of the queue (maximum priority).
-        Uses try-catch statements to handle exceptions, which could crash the program.
-    */
+    /** 
+     * private method for peeking the maximum element
+     * uses @fn peek() to extract the maximum element
+     * uses try-catch to prevent program crashes
+     */
     void doPeek() {
         printHeader("PEEK - Podejrzyj szczyt kolejki (bez usuwania)");
         try {
             const Pair<T>& top = queue.peek();
             std::cout << "  Szczyt: wartosc=" << top.getValue()
                       << ", priorytet=" << top.getPriority() << "\n";
-        } catch (const std::exception& e) {
-            std::cout << "  BLAD: " << e.what() << "\n";
-        }
+        } catch (const std::exception& e) { std::cout << "  BLAD: " << e.what() << "\n";}
     }
 
-    /*
-        Unified function that enables the user to decrease the priority of a specific key-value pair.
-        Uses try-catch statements to handle exceptions, which could crash the program.
-    */
+    /** 
+     * private method for decreasing the key value of specific pair
+     * uses @fn decreaseKey() to decrease key value
+     * uses try-catch to prevent program crashes
+     */
     void doDecreaseKey() {
         printHeader("DECREASE KEY - Zmniejsz priorytet elementu");
         T   val;
@@ -150,15 +148,14 @@ private:
         try {
             queue.decreaseKey(p, newPrio);
             std::cout << "  OK: priorytet zmieniony na " << newPrio << ".\n";
-        } catch (const std::exception& e) {
-            std::cout << "  BLAD: " << e.what() << "\n";
-        }
+        } catch (const std::exception& e) { std::cout << "  BLAD: " << e.what() << "\n";}
     }
 
-    /*
-        Unified function that enables the user to increase the priority of a specific key-value pair.
-        Uses try-catch statements to handle exceptions, which could crash the program.
-    */
+    /** 
+     * private method for increasing the key value of specific pair
+     * uses @fn increaseKey() to extract the maximum element
+     * uses try-catch to prevent program crashes
+     */
     void doIncreaseKey() {
         printHeader("INCREASE KEY - Zwieksz priorytet elementu");
         T   val;
@@ -171,16 +168,21 @@ private:
         try {
             queue.increaseKey(p, newPrio);
             std::cout << "  OK: priorytet zmieniony na " << newPrio << ".\n";
-        } catch (const std::exception& e) {
-            std::cout << "  BLAD: " << e.what() << "\n";
-        }
+        } catch (const std::exception& e) { std::cout << "  BLAD: " << e.what() << "\n";}
     }
 
+    /** 
+     * private method for displaying queue
+     * uses @fn displayQueue() to display queue
+     */
     void doDisplay() {
         printHeader("DISPLAY - Zawartosc kolejki (od najwyzszego priorytetu)");
         displayQueue();
     }
 
+    /** 
+     * private method for showing summary of queue
+     */
     void doStatus() {
         printHeader("STATUS - Informacje o kolejce");
         std::cout << "  Implementacja : " << implName             << "\n";
@@ -188,12 +190,14 @@ private:
         std::cout << "  Czy pusta     : " << (queue.isEmpty() ? "TAK" : "NIE") << "\n";
     }
 
-    /*
-        Function loading pre-defined data for visualization purposes.
-    */
+    /** 
+     * private method for loading sample data to visualize performance
+     * clears the queue first, then loads sample data
+     * uses try-catch to prevent program crashes
+     */
     void doLoadSample() {
         printHeader("DANE TESTOWE - Zaladuj przykladowe elementy");
-        while (!queue.isEmpty()) queue.extractMax();
+        while (!queue.isEmpty()) {queue.extractMax();}
 
         // 9 elements with varied priorities including duplicates
         int samples[][2] = {
@@ -202,22 +206,19 @@ private:
         };
         for (auto& s : samples) {
             Pair<T> p(static_cast<T>(s[0]), s[1]);
-            try {
-                queue.enqueue(p);
-            } catch(const std::exception& e) {
-                std::cout << "  BLAD: " << e.what() << "\n";
-            }
+            try { queue.enqueue(p);} catch(const std::exception& e) { std::cout << "  BLAD: " << e.what() << "\n";}
             
         }
         std::cout << "  Zaladowano 9 elementow testowych.\n\n";
         displayQueue();
     }
 
-    // ── Menu display ──────────────────────────────────────────────────────────
+    // menu display func
 
-    /*
-        Function for printing the visual interactive menu for visualization purposes.
-    */
+    /** 
+     * private method for printing the menu
+     * uses try-catch to prevent program crashes
+     */
     void printMenu() {
         std::cout << "\n";
         std::cout << "  +--------------------------------------------------+\n";
@@ -241,8 +242,16 @@ private:
     }
 
 public:
+
+    /**
+     * constructor of class InteractiveMenu
+     * @param name specifies the name of queue implementation to be displayed in menu
+     */
     explicit InteractiveMenu(const std::string& name) : implName(name) {}
 
+    /** 
+     * public method for running interactive menu
+     */
     void run() {
         int choice = -1;
         while (choice != 0) {

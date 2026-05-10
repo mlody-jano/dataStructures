@@ -6,11 +6,9 @@
 #include "PerformanceTester.h"
 #include "MainMenu.h"
 
-/*
-    Main project .cpp file, which launches the application.
+/**
+ *    Main project .cpp file, which launches the application.
 */
-
-// ── Entry point ───────────────────────────────────────────────────────────────
 
 int main() {
     MainMenu app;

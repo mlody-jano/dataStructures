@@ -2,9 +2,11 @@
 #define QUEUE_H
 #include "Pair.h"
 
-/*
-    Class template for a priority queue. Defines the interface, which is later overriden by the derived classes, DTQueue and HeapQueue.
-*/
+/**
+ * class Queue
+ * @tparam specifies the type of value in @class Pair
+ * provides a abstract interface of queue, that is later overridden by derived classes
+ */
 template <typename T>
 class Queue {
 public:

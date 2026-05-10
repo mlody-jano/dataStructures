@@ -12,33 +12,53 @@
 #include "PerformanceTester.h"
 
 
+/**
+ * class MainMenu
+ * provides a interface for choosing thich mode of program to enter
+ */
 class MainMenu {
 private:
-    // ── Console helpers ───────────────────────────────────────────────────────
+    // utility functions
 
+    /**
+     * private method that clears the input buffer after any operation
+     */
     void clearInput() {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
+    /**
+     * private method that forces the program to wait for user interaction
+     */
     void pause() {
         std::cout << "\n  [Nacisnij Enter aby kontynuowac...]";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    void printLine(char ch = '-', int w = 52) const {
-        std::cout << "  " << std::string(w, ch) << "\n";
-    }
+    /**
+     * private method that prints a separating line for better viewing
+     * @param ch specifies the separator, @param width specifies the width of line 
+     */
+    void printLine(char ch = '-', int w = 52) const { std::cout << "  " << std::string(w, ch) << "\n";}
 
+    /**
+     * private method that reads user choice
+     * @return user choice
+     */
     int readChoice() {
         int c = -1;
-        if (!(std::cin >> c)) clearInput();
+        if (!(std::cin >> c)) {clearInput();}
         else clearInput();
         return c;
     }
 
-    // ── Interactive sub-menu ──────────────────────────────────────────────────
+    // interactive mode menu
 
+    /**
+     * private method for printing the interactive mode menu
+     * after user choice, uses @fn run() on new object of @class InteractiveMenu
+     */
     void runInteractive() {
         std::cout << "\n";
         printLine();
@@ -66,16 +86,12 @@ private:
         }
     }
 
-    // ── Performance sub-menu ──────────────────────────────────────────────────
+    // performance mode menu
 
-    /*
-        Ask the user for all benchmark parameters once and return a filled
-        TestConfig.  Used both for single-implementation runs and for the
-        shared-config "both implementations" run.
-    */
-    BenchmarkConfig askConfig(
-            const std::string& sharedOutputDir = "") {
-
+    /**
+     * private method asking user for test parameters
+     */
+    BenchmarkConfig askConfig(const std::string& sharedOutputDir = "") {
         using Cfg = BenchmarkConfig;
         Cfg cfg;
 
@@ -85,8 +101,8 @@ private:
 
         std::cout << "  Prefix nazwy pliku (Enter = wszystkie)  : ";
         std::getline(std::cin, cfg.filePrefix);
-        if (!cfg.filePrefix.empty() && cfg.filePrefix.back() == '\r')
-            cfg.filePrefix.pop_back();
+
+        if (!cfg.filePrefix.empty() && cfg.filePrefix.back() == '\r') { cfg.filePrefix.pop_back();}
 
         if (sharedOutputDir.empty()) {
             std::cout << "  Katalog na pliki wynikowe              : ";
@@ -101,18 +117,21 @@ private:
         std::cout << "  Rozmiary n (oddzielone spacjami, zakoncz 0)\n";
         std::cout << "  np. 1000 2000 5000 0: ";
         int s;
-        while (std::cin >> s && s != 0)
-            if (s > 0) cfg.sizes.push_back(s);
+        while (std::cin >> s && s != 0) { if (s > 0) cfg.sizes.push_back(s);}
         clearInput();
 
         std::cout << "  Liczba powtorzen na rozmiar            : ";
         std::cin >> cfg.repetitions;
         clearInput();
-        if (cfg.repetitions < 1) cfg.repetitions = 1;
+        if (cfg.repetitions < 1) {cfg.repetitions = 1;}
 
         return cfg;
     }
 
+    /**
+     * private method for printing the performance test mode menu
+     * after user choice, uses @fn runWith() on new object of @class PerformanceTester
+     */
     void runPerformance() {
         std::cout << "\n";
         printLine();
@@ -180,8 +199,11 @@ private:
         }
     }
 
-    // ── Main menu display ─────────────────────────────────────────────────────
+    // main menu 
 
+    /**
+     * private method for printing main menu of program
+     */
     void printMainMenu() const {
         std::cout << "\n";
         std::cout << "  +----------------------------------------------------+\n";
@@ -199,6 +221,9 @@ private:
     }
 
 public:
+    /**
+     * public method for running main menu
+     */
     void run() {
         std::cout << "\n";
         std::cout << "  Witaj w testerze kolejek priorytetowych!\n";
