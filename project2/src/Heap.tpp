@@ -7,6 +7,23 @@ template <typename T>
 Heap<T>::Heap() : data(nullptr), capacity(0), size(0) {}
 
 template <typename T>
+Heap<T>::Heap(const Heap<T>& other) : data{new T[other.capacity]}, capacity{other.capacity}, size{other.size} {
+    for (int i = 0; i < size; i++) {data[i] = other.data[i];}
+}
+
+template <typename T>
+Heap<T>& Heap<T>::operator=(const Heap<T>& other)
+{
+    if (this == &other) {return *this;}
+    delete[] data;
+    data     = new T[capacity];
+    capacity = other.capacity;
+    size     = other.size;
+    for (int i = 0; i < size; i++) {data[i] = other.data[i];}
+    return *this;
+}
+
+template <typename T>
 Heap<T>::~Heap()
 {
     delete[] data;
@@ -121,19 +138,19 @@ void Heap<T>::repairDown(int index)
 }
 
 template <typename T>
-int Heap<T>::parent(int index)
+int Heap<T>::parent(int index) const
 {
     return (index - 1) / 2;
 }
 
 template <typename T>
-int Heap<T>::leftChild(int index)
+int Heap<T>::leftChild(int index) const
 {
     return 2 * index + 1;
 }
 
 template <typename T>
-int Heap<T>::rightChild(int index)
+int Heap<T>::rightChild(int index) const
 {
     return 2 * index + 2;
 }

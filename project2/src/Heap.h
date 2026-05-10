@@ -7,7 +7,10 @@ class Heap
 {
 public:
     Heap();
+    Heap(const Heap<T>&);
     ~Heap();
+
+    Heap<T>& operator=(const Heap<T>&);
 
     void insert(const T& item);
     T extractMax();
@@ -27,9 +30,9 @@ private:
     int capacity;
     int size;
 
-    int parent(int index);
-    int leftChild(int index);
-    int rightChild(int index);
+    int parent(int index) const;
+    int leftChild(int index) const;
+    int rightChild(int index) const;
 
     bool higherPriority(const T& a, const T& b) const;
 
