@@ -6,7 +6,11 @@
 template <typename T>
 void HeapQueue<T>::enqueue(const Pair<T>& item)
 {
-    heap.insert(item);
+    Node node;
+    node.pair = item;
+    node.order = insertionCounter++;
+
+    heap.insert(node);
 }
 
 template <typename T>
@@ -18,7 +22,7 @@ void HeapQueue<T>::extractMax()
 template <typename T>
 const Pair<T>& HeapQueue<T>::peek() const
 {
-    return heap.findMax();
+    return heap.findMax().pair;
 }
 
 template <typename T>
@@ -34,7 +38,7 @@ void HeapQueue<T>::decreaseKey(Pair<T> item, int newPrio)
         throw std::invalid_argument("New priority must be less than current priority");
     }
 
-    heap.at(index).setPriority(newPrio);
+    heap.at(index).pair.setPriority(newPrio);
     heap.repairDown(index);
 }
 
@@ -51,7 +55,7 @@ void HeapQueue<T>::increaseKey(Pair<T> item, int newPrio)
         throw std::invalid_argument("New priority must be greater than current priority");
     }
 
-    heap.at(index).setPriority(newPrio);
+    heap.at(index).pair.setPriority(newPrio);
     heap.repairUp(index);
 }
 
@@ -71,7 +75,7 @@ template <typename T>
 int HeapQueue<T>::findIndex(const Pair<T>& item) const
 {
     for (int i = 0; i < heap.returnSize(); i++) {
-        if (heap.at(i).getValue() == item.getValue() && heap.at(i).getPriority() == item.getPriority()) {
+        if (heap.at(i).pair.getValue() == item.getValue() && heap.at(i).pair.getPriority() == item.getPriority()) {
             return i;
         }
     }

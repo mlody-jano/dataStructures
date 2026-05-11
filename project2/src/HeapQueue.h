@@ -19,7 +19,21 @@ public:
     int            size() const override;                    
 
 private:
-    Heap<Pair<T>> heap;
+    struct Node {
+        Pair<T> pair;
+        int order;
+
+        int getPriority() const {
+            return pair.getPriority();
+        }
+
+        int getOrder() const {
+            return order;
+        }
+    };
+
+    Heap<Node> heap;
+    int insertionCounter = 0; 
 
     int findIndex(const Pair<T>& item) const;
 };
