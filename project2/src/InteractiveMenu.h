@@ -270,7 +270,7 @@ public:
                 case 0: std::cout << "  Powrot do menu glownego.\n"; break;
                 default: std::cout << "  Nieprawidlowy wybor. Podaj liczbe 0-8.\n";
             }
-            if (choice != 0) pause();
+            if (choice != 0) {pause();}
         }
     }
 };

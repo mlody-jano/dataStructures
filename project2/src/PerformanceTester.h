@@ -389,7 +389,7 @@ public:
         std::string prefix;
         std::cout << "  Prefix nazwy pliku (Enter = wszystkie)  : ";
         std::getline(std::cin, prefix);
-        if (!prefix.empty() && prefix.back() == '\n') prefix.pop_back();
+        if (!prefix.empty() && prefix.back() == '\n') {prefix.pop_back();}
 
         // Output directory
         std::string outputDir;
@@ -410,15 +410,13 @@ public:
         // Test parameters
         std::cout << "\n";
         std::vector<int> sizes = askSizes();
-        if (sizes.empty()) {
-            std::cout << "  Brak rozmiarow — testy anulowane.\n"; return;
-        }
+        if (sizes.empty()) { std::cout << "  Brak rozmiarow — testy anulowane.\n"; return;}
 
         int reps;
         std::cout << "  Liczba powtorzen na rozmiar            : ";
         std::cin >> reps;
         clearInput();
-        if (reps < 1) reps = 1;
+        if (reps < 1) {reps = 1;}
 
         // Run per file
         int done = 0;

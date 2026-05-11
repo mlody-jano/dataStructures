@@ -81,8 +81,8 @@ private:
                 m.run();
                 break;
             }
-            case 0: break;
-            default: std::cout << "  Nieprawidlowy wybor.\n";
+            case 0: {break;}
+            default: {std::cout << "  Nieprawidlowy wybor.\n";}
         }
     }
 
@@ -194,8 +194,8 @@ private:
                 pause();
                 break;
             }
-            case 0: break;
-            default: std::cout << "  Nieprawidlowy wybor.\n";
+            case 0: {break;}
+            default: {std::cout << "  Nieprawidlowy wybor.\n";}
         }
     }
 
@@ -234,10 +234,10 @@ public:
             printMainMenu();
             choice = readChoice();
             switch (choice) {
-                case 1: runInteractive();  break;
-                case 2: runPerformance();  break;
-                case 0: std::cout << "\n  Do widzenia!\n\n"; break;
-                default: std::cout << "  Nieprawidlowy wybor. Podaj 0, 1 lub 2.\n";
+                case 1: {runInteractive();  break;}
+                case 2: {runPerformance();  break;}
+                case 0: {std::cout << "\n  Do widzenia!\n\n"; break;}
+                default: {std::cout << "  Nieprawidlowy wybor. Podaj 0, 1 lub 2.\n";}
             }
         }
     }
