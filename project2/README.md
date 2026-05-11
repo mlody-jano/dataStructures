@@ -2,8 +2,8 @@
 
 ## About
 This project contains two implementations of a priority queue in C++, which is a fundamental structure used for representing a queue of items sorted by priority. The program enables users to choose between two modes of running:
-* **Interactive menu** --- Used to interactively show the implementation of structure and to provide a user-friendly learning interface
-* **Performance tester** --- Strictly concentrating in testing performance of operations done on priority queue, enabling users to define test parameters and entry data.
+* **Interactive menu** - Used to interactively show the implementation of structure and to provide a user-friendly learning interface
+* **Performance tester** - Strictly concentrating in testing performance of operations done on priority queue, enabling users to define test parameters and entry data.
 
 Requires entry of **.csv** file with correct data format, that being:
 ```data format
