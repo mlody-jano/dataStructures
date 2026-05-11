@@ -6,11 +6,13 @@
 template <typename T>
 Heap<T>::Heap() : data(nullptr), capacity(0), size(0) {}
 
+// Copy constructor
 template <typename T>
 Heap<T>::Heap(const Heap<T>& other) : data{new T[other.capacity]}, capacity{other.capacity}, size{other.size} {
     for (int i = 0; i < size; i++) {data[i] = other.data[i];}
 }
 
+// Copy assignment operator
 template <typename T>
 Heap<T>& Heap<T>::operator=(const Heap<T>& other)
 {
@@ -74,6 +76,7 @@ int Heap<T>::returnSize() const
     return size;
 }
 
+// Accessor methods to get and set elements at specific indices, with bounds checking
 template <typename T>
 T& Heap<T>::at(int index)
 {
@@ -92,6 +95,7 @@ const T& Heap<T>::at(int index) const
     return data[index];
 }
 
+// private helper functions for repairUP and repairDown to maintain the heap property after key changes
 template <typename T>
 void Heap<T>::heapifyUp(int index)
 {
@@ -125,6 +129,7 @@ void Heap<T>::heapifyDown(int index)
     }
 }
 
+// Repair functions to maintain heap property after key changes
 template <typename T>
 void Heap<T>::repairUp(int index)
 {
@@ -137,6 +142,7 @@ void Heap<T>::repairDown(int index)
     heapifyDown(index);
 }
 
+// Helper functions to calculate parent and child indices
 template <typename T>
 int Heap<T>::parent(int index) const
 {
@@ -155,6 +161,7 @@ int Heap<T>::rightChild(int index) const
     return 2 * index + 2;
 }
 
+// Comparison function to determine if one item has higher priority than another or if they have the same priority, the one that was inserted first has higher priority (FIFO)
 template <typename T>
 bool Heap<T>::higherPriority(const T& a, const T& b) const
 {
