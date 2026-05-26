@@ -8,7 +8,7 @@ private:
     struct Node {
         Pair<V> data;
         Node* next;
-        Node(const Pair<V>& pair) : data(pair), next(nullptr) {}
+        Node(const Pair<V>& pair, Node* nextNode = nullptr) : data(pair), next(nextNode) {}
     };
 
     Node** table;
