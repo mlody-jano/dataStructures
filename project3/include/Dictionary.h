@@ -4,12 +4,11 @@
 
 /**
  * class Dictionary
- * @tparam K type of keys in the dictionary
  * @tparam V type of values in the dictionary
  * abstract class representing a dictionary data structure that maps keys to according values, creating key-value pairs.
  * later overridden by selected implementations, that being 3 diffrent implementations of hash tables
  */
-template <typename K, typename V>
+template <typename V>
 class Dictionary {
     public:
         Dictionary();
@@ -22,6 +21,6 @@ class Dictionary {
         bool                exists(const K&) const         = 0;
         int                 size() const                   = 0;
         V                   find(const K&) const           = 0;
-        DynamicTable<K>     keys() const                   = 0;
+        DynamicTable<int>     keys() const                 = 0;
         DynamicTable<V>     values() const                 = 0;
 };
