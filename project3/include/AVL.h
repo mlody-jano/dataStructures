@@ -20,13 +20,15 @@ class AVLNode {
         void setHeight(int newH) {height = newH;}
         AVLNode* leftChild() const {return left;}
         AVLNode* rightChild() const {return right;}
+
+    // declare @class AVL as a friend of @class AVLNode
+    friend class AVL<V>;
 };
 
 /**
  * class AVL
  * represents the AVL tree data structure, using @class AVLNode to create a tree of nodes
  * @tparam V type of value in the node, key is set to be integer type
- * 
  */
 template <typename V>
 class AVL {
@@ -34,18 +36,19 @@ class AVL {
         AVLNode<V>* root;
         void rotateLeft(AVLNode<V>*&);
         void rotateRight(AVLNode<V>*&);
-        AVLNode<V>* minValueNode(AVLNode<V>*&);
+        AVLNode<V>* minValueNode(AVLNode<V>*);
     protected:
         int balanceFactor(AVLNode<V>*&);
     public:
         AVL();
+        AVL(const AVL<V>&);
         ~AVL();
         void insert(AVLNode<V>*&, const int, const V&);
         void remove(AVLNode<V>*&, const int);
         void display() const;
+        void clear(AVLNode<V>*);
         AVLNode<V>* getRoot() const {return root;}
         AVL<V>& operator=(const AVL<V>&);
-        friend class AVLNode;
 };
 
 /**
@@ -54,6 +57,13 @@ class AVL {
  */
 template <typename V>
 AVL<V>::AVL() : root(nullptr) {}
+
+/**
+ * copying constructor of class AVL
+ * @tparam V type of value in the node
+ */
+template <typename V>
+AVL<V>::AVL(const AVL<V>& other) : root(nullptr) { *this = other;}
 
 /**
  * destructor of class AVL, deletes all nodes in post-order traversal
@@ -81,33 +91,39 @@ AVL<V>::~AVL() {
  */
 template <typename V>
 void AVL<V>::insert(AVLNode<V>*& current, const int key, const V& value) {
-    AVLNode<V>* newNode = new AVLNode<V>(key);
-    newNode->data.setValue(value);
-
-    // if tree is empty, set new node as root
-    if (current == nullptr) {newNode->setHeight(1); current = newNode; return;}
+    
+    // 
+    if (current == nullptr) {
+        current = new AVLNode<V>(key);
+        current->data.setValue(value);
+        current->setHeight(1);
+        return;
+    }
 
     // recursive search for valid position for new node
     if      (key < current->data.getKey()) {insert(current->left, key, value);}
     else if (key > current->data.getKey()) {insert(current->right, key, value);}
 
     // set new heights up the recursive call stack
-    current->setHeight(1 + std::max(current->leftChild().getHeight(), current->rightChild().getHeight()));
+    current->setHeight(1 + std::max(
+        current->leftChild()  ? current->leftChild()->getHeight()  : 0,
+        current->rightChild() ? current->rightChild()->getHeight() : 0
+    ));
 
     // calculating balance factor up the recursive call stack
     int bf = balanceFactor(current);
 
     // if the balance factor is lower than -1 and the key is greater than the key of the right child, rotate left
-    if(bf < -1 && key > current->rightChild()->data.getKey()) {rotateLeft(current);}
+    if      (bf < -1 && key > current->rightChild()->data.getKey()) {rotateLeft(current);}
 
     // if the balance factor is higher than 1 and the key is lower than the key of the left child, rotate right
-    if(bf > 1 && key < current->leftChild().data.getKey()) {rotateRight(current);}
+    else if (bf > 1 && key < current->leftChild()->data.getKey()) {rotateRight(current);}
 
     // if the balance factor is higher than 1 and the key is greater than the key of the left child, rotate left on left child and then rotate right on current node
-    if(bf > 1 && key > current->leftChild().data.getKey()) { rotateRight(current->left); rotateLeft(current);}
+    else if (bf > 1 && key > current->leftChild()->data.getKey()) { rotateLeft(current->left); rotateRight(current);}
 
     // if the balance factor is lower than -1 and the key is lower than the key of the right child, rotate right on right child and then rotate left on current node
-    if(bf < -1 && key < current->rightChild().data.getKey()) { rotateLeft(current->right); rotateRight(current);}
+    else if (bf < -1 && key < current->rightChild()->data.getKey()) { rotateRight(current->right); rotateLeft(current);}
 }
 
 /**
@@ -140,27 +156,31 @@ void AVL<V>::remove(AVLNode<V>*& current, const int key) {
             AVLNode<V>* temp = minValueNode(current->rightChild());
             current->data.setKey(temp->data.getKey());
             current->data.setValue(temp->data.getValue());
-            remove(current->rightChild(), temp->data.getKey());
+            remove(current->right, temp->data.getKey());
         }
     }
+    if(current == nullptr) { return;}
 
     // set new heights up the recursive call stack
-    current->setHeight(1 + std::max(current->leftChild().getHeight(), current->rightChild().getHeight()));
+    current->setHeight(1 + std::max(
+        current->leftChild()  ? current->leftChild()->getHeight()  : 0,
+        current->rightChild() ? current->rightChild()->getHeight() : 0
+    ));
 
     // calculating balance factor up the recursive call stack
     int bf = balanceFactor(current);
 
     // if the balance factor is lower than -1 and the key is greater than the key of the right child, rotate left
-    if(bf < -1 && key > current->rightChild().data.getKey()) {rotateLeft(current);}
+    if      (bf < -1 && key > current->rightChild()->data.getKey()) {rotateLeft(current);}
 
     // if the balance factor is higher than 1 and the key is lower than the key of the left child, rotate right
-    if(bf > 1 && key < current->leftChild().data.getKey()) {rotateRight(current);}
+    else if (bf > 1 && key < current->leftChild()->data.getKey()) {rotateRight(current);}
 
     // if the balance factor is higher than 1 and the key is greater than the key of the left child, rotate left on left child and then rotate right on current node
-    if(bf > 1 && key > current->leftChild().data.getKey()) { rotateRight(current->left); rotateLeft(current);}
+    else if (bf > 1 && key > current->leftChild()->data.getKey()) { rotateLeft(current->left); rotateRight(current);}
 
     // if the balance factor is lower than -1 and the key is lower than the key of the right child, rotate right on right child and then rotate left on current node
-    if(bf < -1 && key < current->rightChild().data.getKey()) { rotateLeft(current->right); rotateRight(current);}
+    else if (bf < -1 && key < current->rightChild()->data.getKey()) { rotateRight(current->right); rotateLeft(current);}
 }
 
 /**
@@ -188,17 +208,73 @@ void AVL<V>::display() const {
  * @param node starting node
  */
 template <typename V>
-AVLNode<V>* AVL<V>::minValueNode(AVLNode<V>*& node) {
+AVLNode<V>* AVL<V>::minValueNode(AVLNode<V>* node) {
     AVLNode<V>* current = node;
     while (current->left != nullptr) {current = current->left;}
     return current;
 }
 
+/**
+ * method used to calculate the balance factor of specific node
+ * @tparam V type of value in node
+ * @param node target node
+ */
 template <typename V>
 int AVL<V>::balanceFactor(AVLNode<V>*& node) {
     if      (!node->leftChild())    { return -(node->rightChild()->getHeight());}
     else if (!node->rightChild())   { return node->leftChild()->getHeight();}
     else                            { return node->leftChild()->getHeight() - node->rightChild()->getHeight();}
+}
+
+/**
+ * private method used to recover the AVL tree property by shifting elements, so that the height of two subsequent subtrees differs by at most <-1,1>
+ * @tparam V type of value in node
+ * @param node node to perform rotation on
+ */
+template <typename V>
+void AVL<V>::rotateLeft(AVLNode<V>*& node) {
+    AVLNode<V>* rightChild = node->right;
+    AVLNode<V>* rightLeftChild = rightChild->left;
+
+    rightChild->left = node;
+    node->right = rightLeftChild;
+
+    // Aktualizacja wysokości — najpierw węzeł niżej
+    node->setHeight(1 + std::max(
+        node->left  ? node->left->getHeight()  : 0,
+        node->right ? node->right->getHeight() : 0
+    ));
+    rightChild->setHeight(1 + std::max(
+        rightChild->left  ? rightChild->left->getHeight()  : 0,
+        rightChild->right ? rightChild->right->getHeight() : 0
+    ));
+
+    node = rightChild; // aktualizacja wskaźnika przez referencję
+}
+
+/**
+ * private method used to recover the AVL tree property by shifting elements, so that the height of two subsequent subtrees differs by at most <-1,1>
+ * @tparam V type of value in node
+ * @param node node to perform rotation on
+ */
+template <typename V>
+void AVL<V>::rotateRight(AVLNode<V>*& node) {
+    AVLNode<V>* leftChild = node->left;
+    AVLNode<V>* leftRightChild = leftChild->right;
+
+    leftChild->right = node;
+    node->left = leftRightChild;
+
+    node->setHeight(1 + std::max(
+        node->left  ? node->left->getHeight()  : 0,
+        node->right ? node->right->getHeight() : 0
+    ));
+    leftChild->setHeight(1 + std::max(
+        leftChild->left  ? leftChild->left->getHeight()  : 0,
+        leftChild->right ? leftChild->right->getHeight() : 0
+    ));
+
+    node = leftChild;
 }
 
 /**
@@ -209,8 +285,9 @@ int AVL<V>::balanceFactor(AVLNode<V>*& node) {
 template <typename V>
 AVL<V>& AVL<V>::operator=(const AVL<V>& other) {
     if (this != &other) {
-        // Clear the current tree
-        this->~AVL();
+        
+        clear(root);
+        root = nullptr;
 
         // Helper function to copy nodes recursively
         std::function<AVLNode<V>*(AVLNode<V>*)> copyNodes = [&](AVLNode<V>* node) -> AVLNode<V>* {
@@ -227,4 +304,17 @@ AVL<V>& AVL<V>::operator=(const AVL<V>& other) {
         root = copyNodes(other.root);
     }
     return *this;
+}
+
+/**
+ * method for clearing any nodes left in an AVL tree
+ * @tparam V type of value in node
+ * @param node to be cleared
+ */
+template <typename V>
+void AVL<V>::clear(AVLNode<V>* node) {
+    if (!node) return;
+    clear(node->left);
+    clear(node->right);
+    delete node;
 }
