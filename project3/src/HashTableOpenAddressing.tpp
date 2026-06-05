@@ -2,6 +2,10 @@
 
 template <typename V>
 HashTableOpenAddressing<V>::HashTableOpenAddressing(int cap) : capacity(cap), currentSize(0), deletedCount(0){
+    if (capacity <= 0) {
+        capacity = 101; // default capacity
+    }
+
     table = new Slot[capacity];
 }
 
@@ -12,26 +16,27 @@ HashTableOpenAddressing<V>::~HashTableOpenAddressing() {
 
 template <typename V>
 int HashTableOpenAddressing<V>::hashFunction(int key) const {
-    return key % capacity;
+    int index = key % capacity;
+    
+    if (index < 0) {
+        index += capacity;
+    }
+    return index;
 }
 
 template <typename V>
-Pair<V> HashTableOpenAddressing<V>::insert(const int& key, const V& value) {
-    if ((currentSize + deletedCount + 1.0) / capacity > 0.7) {//+1 bo uwzglednia element ktory bedzie dodany 
-        resize(capacity * 2 + 1);
-    }
-
+void HashTableOpenAddressing<V>::insert(const int& key, const V& value) {
     int startIndex = hashFunction(key);
     int firstDeletedIndex = -1;
+    int emptyIndex = -1;
 
-    for (int i = 0; i < capacity; i++) {
+    for (int i = 0; i < capacity; ++i) {
         int currentIndex = (startIndex + i) % capacity;
 
         if (table[currentIndex].state == SlotState::OCCUPIED) {
             if (table[currentIndex].data.getKey() == key) {
-                Pair<V> oldPair = table[currentIndex].data;
                 table[currentIndex].data.setValue(value);
-                return oldPair;
+                return;
             }
         }
         else if (table[currentIndex].state == SlotState::DELETED) {
@@ -40,34 +45,64 @@ Pair<V> HashTableOpenAddressing<V>::insert(const int& key, const V& value) {
             }
         }
         else {
-            int insertIndex;
-
-            if (firstDeletedIndex != -1) {
-                insertIndex = firstDeletedIndex;
-                deletedCount--;
-            } else {
-                insertIndex = currentIndex;
-            }
-
-            table[insertIndex].data = Pair<V>(value, key);
-            table[insertIndex].state = SlotState::OCCUPIED;
-            currentSize++;
-
-            return table[insertIndex].data;
+            emptyIndex = currentIndex;
+            break;
         }
     }
 
-    if (firstDeletedIndex != -1) {
-        table[firstDeletedIndex].data = Pair<V>(value, key);
-        table[firstDeletedIndex].state = SlotState::OCCUPIED;
-        currentSize++;
-        deletedCount--;
+    /*
+        klucz nie istnieje
+        dodac nowy element
+    */
 
-        return table[firstDeletedIndex].data;
+    bool willReuseDeleted = (firstDeletedIndex != -1);
+
+    int usedAfterInsert = currentSize + deletedCount;
+
+    if (!willReuseDeleted) {
+        usedAfterInsert++;
     }
 
-    resize(capacity * 2 + 1);
-    return insert(key, value);
+    double usedLoadAfterInsert =
+        static_cast<double>(usedAfterInsert) / capacity;
+
+    if (usedLoadAfterInsert > MAX_USED_LOAD_FACTOR) {
+        /*
+            problemem są głównie pola DELETED, można przebudować tablicę o tym samym rozmiarze.
+            aktywnych elementów będzie za dużo, trzeba tablicę powiększyć
+        */
+        double activeLoadAfterInsert =
+            static_cast<double>(currentSize + 1) / capacity;
+
+        if (activeLoadAfterInsert <= MAX_USED_LOAD_FACTOR) {
+            resize(capacity);
+        } else {
+            resize(capacity * 2 + 1);
+        }
+
+        insertWithoutResize(key, value);
+        return;
+    }
+
+    int insertIndex;
+
+    if (firstDeletedIndex != -1) {
+        insertIndex = firstDeletedIndex;
+        deletedCount--;
+    } else if (emptyIndex != -1) {
+        insertIndex = emptyIndex;
+    } else {
+        /*
+            nie ma EMPTY, ani DELETED, jest pełna
+        */
+        resize(capacity * 2 + 1);
+        insertWithoutResize(key, value);
+        return;
+    }
+
+    table[insertIndex].data = Pair<V>(value, key);
+    table[insertIndex].state = SlotState::OCCUPIED;
+    currentSize++;
 }
 
 template <typename V>
@@ -89,49 +124,46 @@ void HashTableOpenAddressing<V>::insertWithoutResize(const int& key, const V& va
 }
 
 template <typename V>
-Pair<V> HashTableOpenAddressing<V>::remove(const int& key) {
+void HashTableOpenAddressing<V>::remove(const int& key) {
     int startIndex = hashFunction(key);
 
     for (int i = 0; i < capacity; i++) {
         int currentIndex = (startIndex + i) % capacity;
 
         if (table[currentIndex].state == SlotState::EMPTY) {
-            return Pair<V>();
+            return;
         }
 
         if (table[currentIndex].state == SlotState::OCCUPIED &&
             table[currentIndex].data.getKey() == key) {
 
-            Pair<V> removedPair = table[currentIndex].data;
             table[currentIndex].state = SlotState::DELETED;
             currentSize--;
             deletedCount++;
 
-            return removedPair;
+            return;
         }
     }
-
-    return Pair<V>();
 }
 
 template <typename V>
-Pair<V> HashTableOpenAddressing<V>::find(const int& key) const {
+V HashTableOpenAddressing<V>::find(const int& key) const {
     int startIndex = hashFunction(key);
 
     for (int i = 0; i < capacity; i++) {
         int currentIndex = (startIndex + i) % capacity;
 
         if (table[currentIndex].state == SlotState::EMPTY) {
-            return Pair<V>();
+            throw std::out_of_range("Key not found in HashTableOpenAddressing");
         }
 
         if (table[currentIndex].state == SlotState::OCCUPIED &&
             table[currentIndex].data.getKey() == key) {
-            return table[currentIndex].data;
+            return table[currentIndex].data.getValue();
         }
     }
 
-    return Pair<V>();
+    throw std::out_of_range("Key not found in HashTableOpenAddressing");
 }
 
 template <typename V>
@@ -176,6 +208,10 @@ double HashTableOpenAddressing<V>::usedLoadFactor() const{
 
 template <typename V>
 void HashTableOpenAddressing<V>::resize(int newCapacity) {
+    if (newCapacity <= currentSize) {
+        newCapacity = currentSize * 2 + 1;
+    }
+
     Slot* oldTable = table;
     int oldCapacity = capacity;
 
@@ -194,4 +230,20 @@ void HashTableOpenAddressing<V>::resize(int newCapacity) {
     }
 
     delete[] oldTable;
+}
+
+template <typename V>
+void HashTableOpenAddressing<V>::display() const {
+    for (int i = 0; i < capacity; ++i) {
+        std::cout << "[" << i << "] ";
+
+        if (table[i].state == SlotState::EMPTY) {
+            std::cout << "EMPTY";
+        } else if (table[i].state == SlotState::DELETED) {
+            std::cout << "DELETED";
+        } else {
+            std::cout << "(" << table[i].data.getKey() << ", " << table[i].data.getValue() << ")";
+        }
+        std::cout << '\n';
+    }
 }
