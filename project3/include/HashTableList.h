@@ -1,9 +1,12 @@
 #pragma once
 
 #include "Dictionary.h"
+#include "Pair.h"
+#include <stdexcept>
+#include <iostream>
 
 template <typename V>//jeden templaty bo klucz jest typu int zawsze
-class HashTableList : public Dictionary<int, V> {
+class HashTableList : public Dictionary<V> {
 private:
     struct Node {
         Pair<V> data;
@@ -15,23 +18,26 @@ private:
     int capacity;
     int currentSize;
 
-    int hashFunction(int key) const {
-        return key % capacity;
-    }
+    int hashFunction(int key) const;
 
     void clear();
 
 public:
     explicit HashTableList(int cap = 101);
     ~HashTableList() override;
+
+    HashTableList(const HashTableList&) = delete;
+    HashTableList& operator=(const HashTableList&) = delete;
     
-    Pair<V> insert(const int& key, const V& value) override;
-    Pair<V> remove(const int& key) override;
-    Pair<V> find(const int& key) const override;
+    void insert(const int& key, const V& value) override;
+    void remove(const int& key) override;
+    V find(const int& key) const override;
 
     bool exists(const int& key) const override;
     int size() const override;
     bool empty() const override;
+
+    void display() const override;
 };
 
 #include "../src/HashTableList.tpp"

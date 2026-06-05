@@ -2,6 +2,10 @@
 
 template <typename V>
 HashTableList<V>::HashTableList(int cap) : capacity(cap), currentSize(0) {
+
+    if (capacity <= 0) {
+        capacity = 101; // default capacity
+    }
     table = new Node*[capacity]();
 }
 
@@ -12,32 +16,38 @@ HashTableList<V>::~HashTableList() {
 }
 
 template <typename V>
-Pair<V> HashTableList<V>::insert(const int& key, const V& value) {
+int HashTableList<V>::hashFunction(int key) const {
+    int index = key % capacity;
+    if (index < 0) {
+        index += capacity;
+    }
+    return index;
+}
+
+template <typename V>
+void HashTableList<V>::insert(const int& key, const V& value) {
     int index = hashFunction(key);
     Node* current = table[index];
     while (current != nullptr) {
         if (current->data.getKey() == key) {
-            Pair<V> oldValue(current->data.getValue(), key);
             current->data.setValue(value);
-            return oldValue;
+            return;
         }
         current = current->next;
     }
     Pair<V> newPair(value, key);
     table[index] = new Node(newPair, table[index]);
     currentSize++;
-
-    return newPair;
 }
 
 template <typename V>
-Pair<V> HashTableList<V>::remove(const int& key) {
+void HashTableList<V>::remove(const int& key) {
     int index = hashFunction(key);
     Node* current = table[index];
     Node* prev = nullptr;
+
     while (current != nullptr) {
         if (current->data.getKey() == key) {
-            Pair<V> removedValue = current->data;
             if (prev == nullptr) {
                 table[index] = current->next;
             } else {
@@ -45,25 +55,25 @@ Pair<V> HashTableList<V>::remove(const int& key) {
             }
             delete current;
             currentSize--;
-            return removedValue;
+            return;
         }
         prev = current;
         current = current->next;
     }
-    return Pair<V>();
 }
 
 template <typename V>
-Pair<V> HashTableList<V>::find(const int& key) const {
+V HashTableList<V>::find(const int& key) const {
     int index = hashFunction(key);
     Node* current = table[index];
+
     while (current != nullptr) {
         if (current->data.getKey() == key) {
-            return current->data;
+            return current->data.getValue();
         }
         current = current->next;
     }
-    return Pair<V>();
+    throw std::out_of_range("Key not found in HashTableList");
 }
 
 template <typename V>
@@ -101,4 +111,19 @@ void HashTableList<V>::clear() {
         table[i] = nullptr;
     }
     currentSize = 0;
+}
+
+template <typename V>
+void HashTableList<V>::display() const {
+    for (int i = 0; i < capacity; ++i) {
+        std::cout << "[" << i << "]";
+
+        Node* current = table[i];
+
+        while (current != nullptr) {
+            std::cout << " -> (" << current->data.getKey() << ", " << current->data.getValue() << ")";
+            current = current->next;
+        }
+        std::cout << '\n';
+    }
 }

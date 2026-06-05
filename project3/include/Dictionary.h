@@ -11,16 +11,14 @@
 template <typename V>
 class Dictionary {
     public:
-        Dictionary();
+        Dictionary()                                       = default;
         virtual ~Dictionary()                              = default;
-        
-        void                insert(const K&, const V&)     = 0;
-        void                remove(const K&)               = 0;
-        void                display() const                = 0;
-        bool                empty() const                  = 0;
-        bool                exists(const K&) const         = 0;
-        int                 size() const                   = 0;
-        V                   find(const K&) const           = 0;
-        DynamicTable<int>     keys() const                 = 0;
-        DynamicTable<V>     values() const                 = 0;
+
+        virtual void                insert(const int& key, const V& value)  = 0;
+        virtual void                remove(const int& key)                  = 0;
+        virtual void                display() const                         = 0;
+        virtual bool                empty() const                           = 0;
+        virtual bool                exists(const int& key) const            = 0;
+        virtual int                 size() const                            = 0;
+        virtual V                   find(const int& key) const              = 0;
 };
