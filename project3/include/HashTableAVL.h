@@ -12,7 +12,7 @@ class HashTableAVL : public Dictionary<V> {
     protected:
         int hashFunction(const int&) const;
     public:
-        HashTableAVL();
+        HashTableAVL(int cap = 101);
         ~HashTableAVL() override = default;
 
         void insert(const int& key, const V& value) override;
@@ -31,14 +31,34 @@ class HashTableAVL : public Dictionary<V> {
  * @tparam V type of value in node
  */
 template <typename V>
-HashTableAVL<V>::HashTableAVL() : table{nullptr}, capacity{0}, size{0} {}
+HashTableAVL<V>::HashTableAVL(int cap)
+    : capacity(cap), currentSize(0) {
+
+    if (capacity <= 0) {
+        capacity = 101;
+    }
+
+    table = new AVL<V>*[capacity];
+
+    for (int i = 0; i < capacity; ++i) {
+        table[i] = nullptr;
+    }
+}
 
 /**
  * destructor of @class HashTableAVL
  * @tparam V type of value in node
  */
 template <typename V>
-HashTableAVL<V>::~HashTableAVL() {} // here add implementation of descructor
+HashTableAVL<V>::~HashTableAVL() {
+    for (int i = 0; i < capacity; ++i) {
+        delete table[i];
+        table[i] = nullptr;
+    }
+
+    size = 0;
+    delete[] table;
+}
 
 /**
  * hashing function for has table

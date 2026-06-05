@@ -5,6 +5,7 @@
 #include "../include/CsvLoader.h"
 #include "../include/HashTableList.h"
 #include "../include/HashTableOpenAddressing.h"
+#include "../include/HashTableAVL.h"
 
 #include <cmath>
 #include <cstdio>
@@ -97,6 +98,9 @@ void TestRunner::run() const {
             double openInsertTotal = 0.0;
             double openRemoveTotal = 0.0;
 
+            double avlInsertTotal = 0.0;
+            double avlRemoveTotal = 0.0;
+
             for (int seed : config.seeds) {
                 const std::string inputFile =
                     buildInputFilePath(seed);
@@ -141,7 +145,23 @@ void TestRunner::run() const {
                         capacity,
                         config.repetitions
                     );
-            }
+
+                avlInsertTotal +=
+                    benchmarkSingleInsert<HashTableAVL<int>>(
+                        data,
+                        elementToInsert,
+                        capacity,
+                        config.repetitions
+                    );
+
+                avlRemoveTotal +=
+                    benchmarkSingleRemove<HashTableAVL<int>>(
+                        data,
+                        elementToRemove,
+                        capacity,
+                        config.repetitions
+                    );
+                }
 
             const double seedCount =
                 static_cast<double>(config.seeds.size());
@@ -157,6 +177,12 @@ void TestRunner::run() const {
 
             const double openRemoveAverage =
                 openRemoveTotal / seedCount;
+
+            const double avlInsertAverage =
+                avlInsertTotal / seedCount;
+
+            const double avlRemoveAverage =
+                avlRemoveTotal / seedCount;
 
             appendAverageResult(
                 config.outputFile,
@@ -199,6 +225,26 @@ void TestRunner::run() const {
                 loadFactor,
                 elementCount,
                 openRemoveAverage
+            );
+
+            appendAverageResult(
+                config.outputFile,
+                "HashTableAVL",
+                "insert",
+                capacity,
+                loadFactor,
+                elementCount,
+                avlInsertAverage
+            );
+
+            appendAverageResult(
+                config.outputFile,
+                "HashTableAVL",
+                "remove",
+                capacity,
+                loadFactor,
+                elementCount,
+                avlRemoveAverage
             );
 
             std::cout << "Completed: capacity = "
