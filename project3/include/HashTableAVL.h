@@ -32,7 +32,7 @@ class HashTableAVL : public Dictionary<V> {
  */
 template <typename V>
 HashTableAVL<V>::HashTableAVL(int cap)
-    : capacity(cap), currentSize(0) {
+    : capacity(cap), size(0) {
 
     if (capacity <= 0) {
         capacity = 101;
