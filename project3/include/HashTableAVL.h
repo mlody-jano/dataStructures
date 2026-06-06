@@ -8,7 +8,7 @@ class HashTableAVL : public Dictionary<V> {
     private:
         AVL<V>  **table;
         int     capacity;
-        int     size;
+        int     count;
         int                 hashFunction(const int&)             const;
     public:
         HashTableAVL(int cap = 101);
@@ -17,12 +17,12 @@ class HashTableAVL : public Dictionary<V> {
         void                insert(const int& key, const V& value)     override;
         void                remove(const int& key)                     override;
         void                display()                            const override;
-        bool                empty()                              const override {return size == 0 ? true : false;}
+        bool                empty()                              const override {return count == 0 ? true : false;}
         bool                exists(const int&)                   const override;
-        int                 getSize()                            const override {return size;}
+        int                 size()                               const override {return count;}
         V                   find(const int&)                     const override;
-        DynamicTable<int>   keys()                               const override;
-        DynamicTable<V>     values()                             const override;
+        DynamicTable<int>   keys()                               const;
+        DynamicTable<V>     values()                             const;
 };
 
 /**
@@ -30,7 +30,7 @@ class HashTableAVL : public Dictionary<V> {
  * @tparam V type of value in node
  */
 template <typename V>
-HashTableAVL<V>::HashTableAVL(int cap) : capacity(cap), size(0) {
+HashTableAVL<V>::HashTableAVL(int cap) : capacity(cap), count(0) {
     if (capacity <= 0) { capacity = 101; }
 
     table = new AVL<V>*[capacity];
@@ -45,7 +45,7 @@ HashTableAVL<V>::HashTableAVL(int cap) : capacity(cap), size(0) {
 template <typename V>
 HashTableAVL<V>::~HashTableAVL() {
     for (int i = 0; i < capacity; ++i) { delete table[i]; table[i] = nullptr; }
-    size = 0;
+    count = 0;
     delete[] table;
 }
 
@@ -74,7 +74,7 @@ void HashTableAVL<V>::insert(const int& key, const V& value) {
     if (table[index] == nullptr) { table[index] = new AVL<V>(); }
 
     table[index]->insert(table[index]->getRoot(), key, value);
-    size++;
+    count++;
 }
 
 /**
@@ -88,7 +88,7 @@ void HashTableAVL<V>::remove(const int& key) {
 
     if (table[index] == nullptr) { return; }
     table[index]->remove(table[index]->getRoot(), key);
-    size--;
+    count--;
 }
 
 /**

@@ -1,5 +1,12 @@
 #pragma once
+#include <functional>
 #include "Pair.h"
+
+/**
+ * forward declaration of AVL class
+ */
+template <typename V>
+class AVL;
 
 /**
  * class AVLNode
@@ -15,7 +22,7 @@ class AVLNode {
         int         height;
 
     public:
-        AVLNode(int k) : data(Pair<V>(k)), left(nullptr), right(nullptr), height(1) {}
+        AVLNode(int k) : data(V{}, k), left(nullptr), right(nullptr), height(1) {}
         int                 getHeight()                                         const {return height;}
         void                setHeight(int newH)                                       {height = newH;}
         AVLNode*            leftChild()                                         const {return left;}
@@ -50,7 +57,7 @@ class AVL {
         void                inorderValues(AVLNode<V>*, DynamicTable<V>&)        const;
         void                clear(AVLNode<V>*);
         V                   find(AVLNode<V>*, const int)                        const;
-        AVLNode<V>*         getRoot()                                           const {return root;}
+        AVLNode<V>*&        getRoot()                                                 {return root;}
         AVL<V>&             operator=(const AVL<V>&);
 };
 
@@ -332,7 +339,7 @@ template <typename V>
 void AVL<V>::inorderKeys(AVLNode<V>* node, DynamicTable<int>& keyList) const {
     if (!node) { return; }
     inorderKeys(node->left,  keyList);
-    keyList.pushBack(node->data.getKey());
+    keyList.addElementAtEnd(node->data.getKey());
     inorderKeys(node->right, keyList);
 }
 
@@ -346,7 +353,7 @@ template <typename V>
 void AVL<V>::inorderValues(AVLNode<V>* node, DynamicTable<V>& vList) const {
     if (!node) { return; }
     inorderValues(node->left,  vList);
-    vList.pushBack(node->data.getValue());
+    vList.addElementAtEnd(node->data.getValue());
     inorderValues(node->right, vList);
 }
 
@@ -359,7 +366,7 @@ void AVL<V>::inorderValues(AVLNode<V>* node, DynamicTable<V>& vList) const {
 template <typename V>
 V AVL<V>::find(AVLNode<V>* node, const int key) const {
     if (node == nullptr) { throw std::out_of_range("Key not found"); }
-    
+
     if      (key < node->data.getKey()) return find(node->left,  key);
     else if (key > node->data.getKey()) return find(node->right, key);
     else                                return node->data.getValue();
