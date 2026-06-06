@@ -9,19 +9,19 @@
 template <typename V>
 class AVLNode {
     private:
-        Pair<V> data;
-        AVLNode* left;
-        AVLNode* right;
-        int height;
+        Pair<V>     data;
+        AVLNode*    left;
+        AVLNode*    right;
+        int         height;
 
     public:
         AVLNode(int k) : data(Pair<V>(k)), left(nullptr), right(nullptr), height(1) {}
-        int getHeight() const {return height;}
-        void setHeight(int newH) {height = newH;}
-        AVLNode* leftChild() const {return left;}
-        AVLNode* rightChild() const {return right;}
+        int                 getHeight()                                         const {return height;}
+        void                setHeight(int newH)                                       {height = newH;}
+        AVLNode*            leftChild()                                         const {return left;}
+        AVLNode*            rightChild()                                        const {return right;}
 
-    // declare @class AVL as a friend of @class AVLNode
+    /** declare @class AVL as friend to provide acces to private fields */
     friend class AVL<V>;
 };
 
@@ -34,21 +34,24 @@ template <typename V>
 class AVL {
     private:
         AVLNode<V>* root;
-        void rotateLeft(AVLNode<V>*&);
-        void rotateRight(AVLNode<V>*&);
-        AVLNode<V>* minValueNode(AVLNode<V>*);
+        void                rotateLeft(AVLNode<V>*&);
+        void                rotateRight(AVLNode<V>*&);
+        AVLNode<V>*         minValueNode(AVLNode<V>*);
     protected:
-        int balanceFactor(AVLNode<V>*&);
+        int                 balanceFactor(AVLNode<V>*&);
     public:
         AVL();
         AVL(const AVL<V>&);
         ~AVL();
-        void insert(AVLNode<V>*&, const int, const V&);
-        void remove(AVLNode<V>*&, const int);
-        void display() const;
-        void clear(AVLNode<V>*);
-        AVLNode<V>* getRoot() const {return root;}
-        AVL<V>& operator=(const AVL<V>&);
+        void                insert(AVLNode<V>*&, const int, const V&);
+        void                remove(AVLNode<V>*&, const int);
+        void                display()                                           const;
+        void                inorderKeys(AVLNode<V>*, DynamicTable<int>&)        const;
+        void                inorderValues(AVLNode<V>*, DynamicTable<V>&)        const;
+        void                clear(AVLNode<V>*);
+        V                   find(AVLNode<V>*, const int)                        const;
+        AVLNode<V>*         getRoot()                                           const {return root;}
+        AVL<V>&             operator=(const AVL<V>&);
 };
 
 /**
@@ -72,7 +75,7 @@ AVL<V>::AVL(const AVL<V>& other) : root(nullptr) { *this = other;}
 template <typename V>
 AVL<V>::~AVL() {
     std::function<void(AVLNode<V>*)> postOrder = [&](AVLNode<V>* node) {
-        if (node == nullptr) return;
+        if (node == nullptr) { return; }
         postOrder(node->leftChild());
         postOrder(node->rightChild());
         delete node;
@@ -137,7 +140,7 @@ void AVL<V>::insert(AVLNode<V>*& current, const int key, const V& value) {
 template <typename V>
 void AVL<V>::remove(AVLNode<V>*& current, const int key) {
     
-    if(current == nullptr) {return;}
+    if(current == nullptr) { return; }
 
     if      (key < current->data.getKey()) {remove(current->left, key);}
     else if (key > current->data.getKey()) {remove(current->right, key);}
@@ -159,7 +162,7 @@ void AVL<V>::remove(AVLNode<V>*& current, const int key) {
             remove(current->right, temp->data.getKey());
         }
     }
-    if(current == nullptr) { return;}
+    if(current == nullptr) { return; }
 
     // set new heights up the recursive call stack
     current->setHeight(1 + std::max(
@@ -190,7 +193,7 @@ void AVL<V>::remove(AVLNode<V>*& current, const int key) {
  */
 template <typename V>
 void AVL<V>::display() const {
-    if (root == nullptr) {std::cout << "AVL tree is empty." << std::endl; return;}
+    if (root == nullptr) { std::cout << "AVL tree is empty." << std::endl; return; }
     std::cout << "AVL tree contents: " << std::endl;
     std::function<void(AVLNode<V>*)> inOrder = [&](AVLNode<V>* node) {
         if (node != nullptr) {
@@ -210,7 +213,7 @@ void AVL<V>::display() const {
 template <typename V>
 AVLNode<V>* AVL<V>::minValueNode(AVLNode<V>* node) {
     AVLNode<V>* current = node;
-    while (current->left != nullptr) {current = current->left;}
+    while (current->left != nullptr) { current = current->left; }
     return current;
 }
 
@@ -221,9 +224,9 @@ AVLNode<V>* AVL<V>::minValueNode(AVLNode<V>* node) {
  */
 template <typename V>
 int AVL<V>::balanceFactor(AVLNode<V>*& node) {
-    if      (!node->leftChild())    { return -(node->rightChild()->getHeight());}
-    else if (!node->rightChild())   { return node->leftChild()->getHeight();}
-    else                            { return node->leftChild()->getHeight() - node->rightChild()->getHeight();}
+    if      (!node->leftChild())    { return -(node->rightChild()->getHeight()); }
+    else if (!node->rightChild())   { return node->leftChild()->getHeight(); }
+    else                            { return node->leftChild()->getHeight() - node->rightChild()->getHeight(); }
 }
 
 /**
@@ -289,9 +292,9 @@ AVL<V>& AVL<V>::operator=(const AVL<V>& other) {
         clear(root);
         root = nullptr;
 
-        // Helper function to copy nodes recursively
+        // helper function to copy nodes recursively
         std::function<AVLNode<V>*(AVLNode<V>*)> copyNodes = [&](AVLNode<V>* node) -> AVLNode<V>* {
-            if (node == nullptr) {return nullptr;}
+            if (node == nullptr) { return nullptr; }
             AVLNode<V>* newNode = new AVLNode<V>(node->data.getKey());
             newNode->data.setValue(node->data.getValue());
             newNode->setHeight(node->getHeight());
@@ -313,8 +316,51 @@ AVL<V>& AVL<V>::operator=(const AVL<V>& other) {
  */
 template <typename V>
 void AVL<V>::clear(AVLNode<V>* node) {
-    if (!node) return;
+    if (!node) { return; }
     clear(node->left);
     clear(node->right);
     delete node;
+}
+
+/**
+ * method for returning a list of keys available in AVL tree
+ * @tparam V
+ * @param node starting node
+ * @param keyList reference to result list
+ */
+template <typename V>
+void AVL<V>::inorderKeys(AVLNode<V>* node, DynamicTable<int>& keyList) const {
+    if (!node) { return; }
+    inorderKeys(node->left,  keyList);
+    keyList.pushBack(node->data.getKey());
+    inorderKeys(node->right, keyList);
+}
+
+/**
+ * method for returning a list of values available in AVL tree
+ * @tparam V
+ * @param node starting node
+ * @param vList reference to result list
+ */
+template <typename V>
+void AVL<V>::inorderValues(AVLNode<V>* node, DynamicTable<V>& vList) const {
+    if (!node) { return; }
+    inorderValues(node->left,  vList);
+    vList.pushBack(node->data.getValue());
+    inorderValues(node->right, vList);
+}
+
+/**
+ * method for finding a value tied to a key passed along as argument
+ * @tparam V type of value in node
+ * @param node starting node
+ * @param key key of pair to be found
+ */
+template <typename V>
+V AVL<V>::find(AVLNode<V>* node, const int key) const {
+    if (node == nullptr) { throw std::out_of_range("Key not found"); }
+    
+    if      (key < node->data.getKey()) return find(node->left,  key);
+    else if (key > node->data.getKey()) return find(node->right, key);
+    else                                return node->data.getValue();
 }
