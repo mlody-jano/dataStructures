@@ -179,18 +179,16 @@ void AVL<V>::remove(AVLNode<V>*& current, const int key) {
 
     // calculating balance factor up the recursive call stack
     int bf = balanceFactor(current);
-
-    // if the balance factor is lower than -1 and the key is greater than the key of the right child, rotate left
-    if      (bf < -1 && key > current->rightChild()->data.getKey()) {rotateLeft(current);}
-
-    // if the balance factor is higher than 1 and the key is lower than the key of the left child, rotate right
-    else if (bf > 1 && key < current->leftChild()->data.getKey()) {rotateRight(current);}
-
-    // if the balance factor is higher than 1 and the key is greater than the key of the left child, rotate left on left child and then rotate right on current node
-    else if (bf > 1 && key > current->leftChild()->data.getKey()) { rotateLeft(current->left); rotateRight(current);}
-
-    // if the balance factor is lower than -1 and the key is lower than the key of the right child, rotate right on right child and then rotate left on current node
-    else if (bf < -1 && key < current->rightChild()->data.getKey()) { rotateRight(current->right); rotateLeft(current);}
+    
+    if (bf < -1) {
+        int rightBF = balanceFactor(current->right);
+        if (rightBF <= 0) rotateLeft(current);
+        else { rotateRight(current->right); rotateLeft(current); }
+    } else if (bf > 1) {
+        int leftBF = balanceFactor(current->left);
+        if (leftBF >= 0) rotateRight(current);
+        else { rotateLeft(current->left); rotateRight(current); }
+    }
 }
 
 /**

@@ -85,8 +85,8 @@ void HashTableAVL<V>::insert(const int& key, const V& value) {
 template <typename V>
 void HashTableAVL<V>::remove(const int& key) {
     unsigned int index = hashFunction(key);
-
     if (table[index] == nullptr) { return; }
+    if (!exists(key)) { return; }
     table[index]->remove(table[index]->getRoot(), key);
     count--;
 }
