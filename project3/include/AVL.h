@@ -231,9 +231,19 @@ AVLNode<V>* AVL<V>::minValueNode(AVLNode<V>* node) {
  */
 template <typename V>
 int AVL<V>::balanceFactor(AVLNode<V>*& node) {
-    if      (!node->leftChild())    { return -(node->rightChild()->getHeight()); }
-    else if (!node->rightChild())   { return node->leftChild()->getHeight(); }
-    else                            { return node->leftChild()->getHeight() - node->rightChild()->getHeight(); }
+    if (node == nullptr) {
+        return 0;
+    }
+
+    int leftHeight = node->leftChild()
+        ? node->leftChild()->getHeight()
+        : 0;
+
+    int rightHeight = node->rightChild()
+        ? node->rightChild()->getHeight()
+        : 0;
+
+    return leftHeight - rightHeight;
 }
 
 /**
