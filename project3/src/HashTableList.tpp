@@ -24,6 +24,7 @@ int HashTableList<V>::hashFunction(int key) const {
     return index;
 }
 
+// Najpierw przejscie przez caly kubelek Wstawianie z aktualizacją wartości, jeśli klucz już istnieje, lub dodawanie nowego węzła na początku listy dla danego indeksu
 template <typename V>
 void HashTableList<V>::insert(const int& key, const V& value) {
     int index = hashFunction(key);
@@ -40,6 +41,7 @@ void HashTableList<V>::insert(const int& key, const V& value) {
     currentSize++;
 }
 
+// Usuwanie z przejściem przez listę w kubełku, aktualizacją wskaźników i usuwaniem węzła, jeśli klucz zostanie znaleziony
 template <typename V>
 void HashTableList<V>::remove(const int& key) {
     int index = hashFunction(key);
@@ -62,6 +64,7 @@ void HashTableList<V>::remove(const int& key) {
     }
 }
 
+// Znajdowanie z przejściem przez listę w kubełku, zwracaniem wartości, jeśli klucz zostanie znaleziony, lub rzucaniem wyjątku, jeśli klucz nie istnieje
 template <typename V>
 V HashTableList<V>::find(const int& key) const {
     int index = hashFunction(key);
@@ -76,6 +79,7 @@ V HashTableList<V>::find(const int& key) const {
     throw std::out_of_range("Key not found in HashTableList");
 }
 
+// Sprawdzanie istnienia klucza z przejściem przez listę w kubełku, zwracaniem true, jeśli klucz zostanie znaleziony, lub false, jeśli klucz nie istnieje
 template <typename V>
 bool HashTableList<V>::exists(const int& key) const {
     int index = hashFunction(key);
@@ -99,6 +103,7 @@ bool HashTableList<V>::empty() const {
     return currentSize == 0;
 }
 
+// Czyszczenie tablicy z usuwaniem wszystkich węzłów i ustawianiem wskaźników na nullptr, oraz resetowaniem rozmiaru
 template <typename V>
 void HashTableList<V>::clear() {
     for (int i = 0; i < capacity; ++i) {
@@ -113,6 +118,7 @@ void HashTableList<V>::clear() {
     currentSize = 0;
 }
 
+// Wyświetlanie stanu tablicy, pokazując indeks i parę klucz-wartość dla każdego elementu w kubełku
 template <typename V>
 void HashTableList<V>::display() const {
     for (int i = 0; i < capacity; ++i) {

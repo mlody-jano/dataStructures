@@ -24,6 +24,7 @@ int HashTableOpenAddressing<V>::hashFunction(int key) const {
     return index;
 }
 
+// Wstawianie z uwzględnieniem DELETED i EMPTY, oraz sprawdzaniem load factorów
 template <typename V>
 void HashTableOpenAddressing<V>::insert(const int& key, const V& value) {
     int startIndex = hashFunction(key);
@@ -105,6 +106,7 @@ void HashTableOpenAddressing<V>::insert(const int& key, const V& value) {
     currentSize++;
 }
 
+// Wstawianie bez sprawdzania load factorów, używane podczas resize, gdzy jest pewność, że jest wystarczająco dużo miejsca
 template <typename V>
 void HashTableOpenAddressing<V>::insertWithoutResize(const int& key, const V& value) {
     int index = hashFunction(key);
@@ -123,6 +125,7 @@ void HashTableOpenAddressing<V>::insertWithoutResize(const int& key, const V& va
     throw std::overflow_error("Hash table is full during rehash");
 }
 
+// Usuwanie z oznaczaniem pola jako DELETED (nagrobek), oraz aktualizacją liczby usuniętych elementów
 template <typename V>
 void HashTableOpenAddressing<V>::remove(const int& key) {
     int startIndex = hashFunction(key);
@@ -146,6 +149,7 @@ void HashTableOpenAddressing<V>::remove(const int& key) {
     }
 }
 
+// Znajdowanie z pomijaniem DELETED, ale zatrzymywaniem się na EMPTY, oraz rzucaniem wyjątku, gdy klucz nie zostanie znaleziony
 template <typename V>
 V HashTableOpenAddressing<V>::find(const int& key) const {
     int startIndex = hashFunction(key);
@@ -166,6 +170,7 @@ V HashTableOpenAddressing<V>::find(const int& key) const {
     throw std::out_of_range("Key not found in HashTableOpenAddressing");
 }
 
+// Sprawdzanie istnienia klucza z pomijaniem DELETED, ale zatrzymywaniem się na EMPTY, oraz zwracaniem false, gdy klucz nie zostanie znaleziony
 template <typename V>
 bool HashTableOpenAddressing<V>::exists(const int& key) const {
     int startIndex = hashFunction(key);
@@ -196,6 +201,7 @@ bool HashTableOpenAddressing<V>::empty() const {
     return currentSize == 0;
 }
 
+// Obliczanie load factorów: aktywnego (tylko OCCUPIED) i używanego (OCCUPIED + DELETED)
 template <typename V>
 double HashTableOpenAddressing<V>::activeLoadFactor() const {
     return static_cast<double>(currentSize) / capacity;
@@ -206,6 +212,7 @@ double HashTableOpenAddressing<V>::usedLoadFactor() const{
     return static_cast<double>(currentSize + deletedCount) / capacity;
 }
 
+// Resize z przebudową tablicy, kopiowaniem tylko elementów OCCUPIED, oraz aktualizacją rozmiaru i liczby usuniętych elementów
 template <typename V>
 void HashTableOpenAddressing<V>::resize(int newCapacity) {
     if (newCapacity <= currentSize) {
@@ -232,6 +239,7 @@ void HashTableOpenAddressing<V>::resize(int newCapacity) {
     delete[] oldTable;
 }
 
+// Wyświetlanie stanu tablicy, pokazując indeks, stan (EMPTY, DELETED, OCCUPIED) i parę klucz-wartość dla zajętych slotów
 template <typename V>
 void HashTableOpenAddressing<V>::display() const {
     for (int i = 0; i < capacity; ++i) {
