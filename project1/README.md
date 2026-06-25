@@ -1,7 +1,14 @@
 # Data Structures
 
 ## About
-This project contains implementations of fundamental data structures in C++ (Dynamic Table, Singly Linked List, and Doubly Linked List) integrated into a single system with an interactive CLI menu. The codebase has been refactored using C++ templates to provide a unified and clean API across all data structures.
+This project contains three implementations of a **list** ADT in C++, which is a fundamental structure used for storing any data in program memory. The program enables users to choose between two modes of running:
+* **Interactive menu** - Used to interactively show the implementation of structure and to provide a user-friendly learning interface
+* **Performance tester** - Strictly concentrating in testing performance of operations, enabling users to define test parameters and entry data.
+
+Requires entry of **.txt** file with correct data format, that being:
+```data format
+{key<int>}
+```
 
 ## Prerequisites
 * A C++ compiler that supports the **C++17** standard (e.g., GCC, Clang, MSVC).
@@ -13,7 +20,7 @@ This project uses CMake for an out-of-source build. Follow these steps to compil
 
 1. **Clone the repository** and navigate to the project directory:
    ```bash
-   cd datastructures/Project1
+   cd dataStructures/project1
    mkdir build
    cd build
    cmake ..
